@@ -3,14 +3,12 @@
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE FlexibleInstances #-}
 module Print
-       (ShowFingering (..),
-       printChord) where
+       (ShowFingering (..)) where
 
 import Data.List (delete, genericReplicate, sortBy)
 import qualified Data.Map as M
 import Text.Printf (printf, PrintfArg)
 
-import Note
 import Instrument
 import Fingering
 import Search
@@ -56,7 +54,3 @@ instance (PrintfArg a) => ShowFingering a (ChordFingering a) where
                  (n, f) <- M.assocs stringMap,
                  let string = strings M.! n,
                  let maybeFret = fmap (\(StringFingering _ f) -> f) f]
-
-printChord notes chordNumber instr =
-           putStrLn $ showFingering instr $ chords !! chordNumber
-           where chords = chordFingerings notes instr
