@@ -55,7 +55,7 @@ data Note = Note ABC Octave
 instance Ord Note where
     (Note n1 o1) `compare` (Note n2 o2) = (o1, n1) `compare` (o2, n2)
 
-semitonesInOctave = 12
+semitonesInOctave = toInteger $ (fromEnum (maxBound :: ABC)) - (fromEnum (minBound :: ABC)) + 1
 
 -- |Returns a semitone number for a given note, counting from C.
 semitone :: ABC -> Integer
