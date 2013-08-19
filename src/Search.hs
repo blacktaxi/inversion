@@ -1,10 +1,11 @@
+{-# LANGUAGE PatternGuards #-}
 module Search where
 
 import Data.Maybe (catMaybes)
 import qualified Data.Map as M
 
-import Fingering -- (Fret, StringFingering, ChordFingering)
-import Instrument -- (Instrument, GuitarString, FretNumber)
+import Fingering
+import Instrument
 import Note (Note, semitoneDistance)
 
 -- |Finds a fingering for a note on a specific string.
