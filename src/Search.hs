@@ -5,10 +5,10 @@ import qualified Data.Map as M
 
 import Fingering -- (Fret, StringFingering, ChordFingering)
 import Instrument -- (Instrument, GuitarString, FretNumber)
-import Note (AbsNote, semitoneDistance)
+import Note (Note, semitoneDistance)
 
 -- |Finds a fingering for a note on a specific string.
-findFret :: AbsNote -- ^ note
+findFret :: Note -- ^ note
          -> GuitarString -- ^ a string
          -> FretNumber -- ^ number of frets on the string
          -> Maybe Fret -- ^ Just fret number if possible, Nothing otherwise
@@ -19,7 +19,7 @@ findFret note (GuitarString openNote) frets =
     _ -> Nothing
 
 -- |Finds all possible fingerings for a single note on a given instrument.
-noteFingerings :: AbsNote -> Instrument a -> [StringFingering a]
+noteFingerings :: Note -> Instrument a -> [StringFingering a]
 noteFingerings note (Instrument strings frets) =
     catMaybes possibleFingerings
     where
@@ -28,7 +28,7 @@ noteFingerings note (Instrument strings frets) =
         nameStringPairs = M.assocs strings
 
 -- |Finds all possible fingerings for a chord on a given instrument.
-chordFingerings :: [AbsNote] -> Instrument a -> [ChordFingering a]
+chordFingerings :: [Note] -> Instrument a -> [ChordFingering a]
 chordFingerings [] _ = []
 chordFingerings [n] instrument =
     map (\x -> ChordFingering [x]) $ noteFingerings n instrument
