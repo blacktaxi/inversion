@@ -2,7 +2,38 @@ module Note where
 
 -- |An ABC notation note.
 data ABC = C | Cs | D | Ds | E | F | Fs | G | Gs | A | As | B
-    deriving (Enum, Eq, Ord, Read, Show)
+    deriving (Eq, Ord, Read, Show)
+
+instance Bounded ABC where
+    minBound = C
+    maxBound = B
+
+instance Enum ABC where
+    fromEnum C = 0
+    fromEnum Cs = 1
+    fromEnum D = 2
+    fromEnum Ds = 3
+    fromEnum E = 4
+    fromEnum F = 5
+    fromEnum Fs = 6
+    fromEnum G = 7
+    fromEnum Gs = 8
+    fromEnum A = 9
+    fromEnum As = 10
+    fromEnum B = 11
+
+    toEnum 0 = C
+    toEnum 1 = Cs
+    toEnum 2 = D
+    toEnum 3 = Ds
+    toEnum 4 = E
+    toEnum 5 = F
+    toEnum 6 = Fs
+    toEnum 7 = G
+    toEnum 8 = Gs
+    toEnum 9 = A
+    toEnum 10 = As
+    toEnum 11 = B
 
 type Octave = Integer
 
@@ -17,18 +48,7 @@ semitonesInOctave = 12
 
 -- |Returns a semitone number for a given note, counting from C.
 semitone :: ABC -> Integer
-semitone C = 0
-semitone Cs = 1
-semitone D = 2
-semitone Ds = 3
-semitone E = 4
-semitone F = 5
-semitone Fs = 6
-semitone G = 7
-semitone Gs = 8
-semitone A = 9
-semitone As = 10
-semitone B = 11
+semitone = toInteger . fromEnum
 
 -- |Calculates distance between two notes in semitones.
 semitoneDistance :: Note -> Note -> Integer
