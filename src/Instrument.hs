@@ -2,6 +2,7 @@
 {-# LANGUAGE ConstraintKinds #-}
 module Instrument where
 
+import Control.Arrow as A
 import qualified Data.Map as M
 import Note
 
@@ -17,7 +18,7 @@ data Instrument a = (StringName a) => Instrument (M.Map a GuitarString) FretNumb
 -- |Creates a FretNumber -> Instrument from list of (string name, zero fret note).
 fromList :: (StringName a) => [(a, AbsNote)] -> FretNumber -> Instrument a
 fromList strings =
-    Instrument (M.fromList $ map (\(n, no) -> (n, GuitarString no)) strings)
+    Instrument (M.fromList $ map (A.second GuitarString) strings)
 
 sixStringGuitar :: [AbsNote] -> FretNumber -> Instrument String
 sixStringGuitar stringNotes =

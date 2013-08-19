@@ -1,6 +1,5 @@
 {-# LANGUAGE GADTs #-}
 {-# LANGUAGE ConstraintKinds #-}
-{-# LANGUAGE StandaloneDeriving #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE FlexibleInstances #-}
 module Print where
@@ -43,7 +42,7 @@ instance (PrintfArg a) => ShowFingering a (ChordFingering a) where
         where
             allMute = M.map (\_ -> Nothing :: Maybe (StringFingering a)) strings
             chord = M.fromList $ map (\f@(StringFingering n _) -> (n, Just f)) fingerings
-            stringMap = M.union chord allMute
+            stringMap = chord `M.union` allMute
             ss = [showFingeredString string n fretCount maybeFret |
                  (n, f) <- M.assocs stringMap,
                  let string = strings M.! n,
