@@ -1,8 +1,8 @@
 module Note where
 
 -- |An ABC notation note.
-data ABC = C | Cs | D | Ds | E | F | Fs | G | Gs | A | As | B
-    deriving (Eq, Ord, Read, Show)
+data ABC = C | Cs | Db | D | Ds | Eb | E | F | Fs | Gb | G | Gs | Ab | A | As | Bb | B
+    deriving (Read, Show)
 
 instance Bounded ABC where
     minBound = C
@@ -11,15 +11,20 @@ instance Bounded ABC where
 instance Enum ABC where
     fromEnum C = 0
     fromEnum Cs = 1
+    fromEnum Db = 1
     fromEnum D = 2
     fromEnum Ds = 3
+    fromEnum Eb = 3
     fromEnum E = 4
     fromEnum F = 5
     fromEnum Fs = 6
+    fromEnum Gb = 6
     fromEnum G = 7
     fromEnum Gs = 8
+    fromEnum Ab = 8
     fromEnum A = 9
     fromEnum As = 10
+    fromEnum Bb = 10
     fromEnum B = 11
 
     toEnum 0 = C
@@ -34,6 +39,12 @@ instance Enum ABC where
     toEnum 9 = A
     toEnum 10 = As
     toEnum 11 = B
+
+instance Eq ABC where
+    x == y = fromEnum x == fromEnum y
+
+instance Ord ABC where
+    compare x y = compare (fromEnum x) (fromEnum y)
 
 type Octave = Integer
 
