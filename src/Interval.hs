@@ -1,6 +1,6 @@
 module Interval where
 
-data Interval = Interval Integer
+newtype Interval = Interval Integer
     deriving (Eq, Ord, Read, Show)
 
 perf1 = Interval 0

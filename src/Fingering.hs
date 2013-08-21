@@ -13,5 +13,5 @@ deriving instance (Show a) => Show (StringFingering a)
 deriving instance (Eq a) => Eq (StringFingering a)
 deriving instance (Ord a, Read a) => Read (StringFingering a)
 
-data ChordFingering a = ChordFingering [StringFingering a]
+newtype ChordFingering a = ChordFingering [StringFingering a]
     deriving (Eq, Read, Show)
