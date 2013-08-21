@@ -4,12 +4,15 @@ newtype Interval = Interval Integer
     deriving (Eq, Ord, Read, Show)
 
 instance Num Interval where
+    fromInteger = Interval
+
     (Interval i1) + (Interval i2) = Interval (i1 + i2)
     (Interval i1) - (Interval i2) = Interval (i1 - i2)
+    abs (Interval i) = Interval . abs $ i
+    signum (Interval i) = Interval . signum $ i
+
+    -- When does it make sense to multiply intervals?
     (*) = undefined
-    abs = undefined
-    signum = undefined
-    fromInteger = Interval
 
 perf1 = Interval 0
 dim2 = perf1
@@ -54,6 +57,7 @@ unison = perf1
 semitone = min2
 tone = maj2
 tritone = dim5
+octave = perf8
 
 inversion :: Interval -> Interval
-inversion (Interval i) = Interval . abs $ i - 12
+inversion i = abs (i - octave)
