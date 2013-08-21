@@ -3,6 +3,14 @@ module Interval where
 newtype Interval = Interval Integer
     deriving (Eq, Ord, Read, Show)
 
+instance Num Interval where
+    (Interval i1) + (Interval i2) = Interval (i1 + i2)
+    (Interval i1) - (Interval i2) = Interval (i1 - i2)
+    (*) = undefined
+    abs = undefined
+    signum = undefined
+    fromInteger = Interval
+
 perf1 = Interval 0
 dim2 = perf1
 
