@@ -1,18 +1,38 @@
 module Interval where
 
+import Note
+
+-- |Musical interval, in semitones.
 newtype Interval = Interval Integer
     deriving (Eq, Ord, Read, Show)
 
-instance Num Interval where
-    fromInteger = Interval
+-- |Interval arithmetic.
+class IntervalNum a where
+    (.+) :: a -> Interval -> a
+    (.-) :: a -> Interval -> a
 
-    (Interval i1) + (Interval i2) = Interval (i1 + i2)
-    (Interval i1) - (Interval i2) = Interval (i1 - i2)
-    abs (Interval i) = Interval . abs $ i
-    signum (Interval i) = Interval . signum $ i
+instance IntervalNum Interval where
+    (Interval i1) .+ (Interval i2) = Interval (i1 + i2)
+    (Interval i1) .- (Interval i2) = Interval (i1 - i2)
 
-    -- When does it make sense to multiply intervals?
-    (*) = undefined
+-- Here we heavily rely on the fact that note and interval
+-- arithmetic are very closely related. The 'abstractions'
+-- don't seem to hold up.
+instance IntervalNum Note where
+    (Note n o) .+ (Interval i) =
+        (Note newNote newOctave)
+        where noteSemitone = toInteger (fromEnum n)
+              (d, m) = (noteSemitone + i) `divMod` semitonesInOctave
+              newNote = toEnum $ fromInteger m
+              newOctave = o + d
+    n .- (Interval i) = n .+ (Interval (-i))
+
+-- @TODO doesn't belong to IntervalNum and doesn't belong here
+-- either?
+(Interval i) .* x = Interval (i * x)
+
+inversion :: Interval -> Interval
+inversion (Interval i) = Interval . abs $ i - semitonesInOctave
 
 -- Common intervals
 perf1 = Interval 0
@@ -49,7 +69,6 @@ unison = perf1
 semitone = min2
 tone = maj2
 tritone = dim5
+fourth = perf4
+fifth = perf5
 octave = perf8
-
-inversion :: Interval -> Interval
-inversion i = abs (i - octave)
