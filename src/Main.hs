@@ -2,6 +2,9 @@ module Main where
 
 import System.Environment (getArgs)
 import Control.Monad (mapM)
+import Chord (Chord (..))
+import Interval (Interval (..))
+import Note (Note (..))
 import Search (chordFingerings)
 import Print (ShowFingering (..))
 import qualified Instrument as I
@@ -12,7 +15,8 @@ printChord notes chordNumber instr =
 
 main = do  
     (iname:chordSpec) <- getArgs
-    let chord = read (unwords chordSpec)
+    let (n, o, ints) = read (unwords chordSpec)
+        chord = Chord (Note n o) $ map Interval ints
         instrument = case iname of
                      "ukulele" -> I.ukulele
                      "guitar" -> I.guitar
