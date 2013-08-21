@@ -29,7 +29,7 @@ showFingeredString string stringName fretCount fingering =
                                              f <- [1 .. fretCount]])
 
 showFretNumbers fretCount =
-    concat $ [printf "%4d" f | f <- [1 .. fretCount]]
+    concat $ map (printf "%4d") [1 .. fretCount]
 
 showNumberedBoard board fretCount =
     unlines (board ++ [fretNumbers])
