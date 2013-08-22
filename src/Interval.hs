@@ -22,7 +22,7 @@ instance NoteNum Interval Interval Interval where
 instance NoteNum Note Interval Note where
     (Note n o) .+ (Interval i) =
         (Note newNote newOctave)
-        where noteSemitone = toInteger . fromEnum $ n
+        where noteSemitone = absSemitone n
               (d, m) = (noteSemitone + i) `divMod` semitonesInOctave
               newNote = toEnum $ fromInteger m
               newOctave = o + d
@@ -31,7 +31,7 @@ instance NoteNum Note Interval Note where
 instance NoteNum Note Note Interval where
     (Note n1 o1) .- (Note n2 o2) =
         (Interval i)
-        where absnote n o = o * semitonesInOctave + (toInteger . fromEnum $ n)
+        where absnote n o = o * semitonesInOctave + (absSemitone n)
               a1 = absnote n1 o1
               a2 = absnote n2 o2
               i = a1 - a2

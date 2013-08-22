@@ -6,7 +6,8 @@ import qualified Data.Map as M
 
 import Fingering
 import Instrument
-import Note (Note, semitoneDistance)
+import Interval (NoteNum (..), Interval (..))
+import Note (Note)
 import Chord (Chord(..), toNotes)
 
 -- |Finds a fingering for a note on a specific string.
@@ -15,9 +16,9 @@ findFret :: Note -- ^ note
          -> FretNumber -- ^ number of frets on the string
          -> Maybe Fret -- ^ Just fret number if possible, Nothing otherwise
 findFret note (GuitarString openNote) frets =
-    case semitoneDistance openNote note of
-    x | x == 0 -> Just Open
-    x | x > 0, x <= frets -> Just $ Fret x
+    case note .- openNote of
+    (Interval x) | x == 0 -> Just Open
+    (Interval x) | x > 0, x <= frets -> Just $ Fret x
     _ -> Nothing
 
 -- |Finds all possible fingerings to play a single note on a given instrument.
