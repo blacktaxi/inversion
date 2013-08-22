@@ -58,10 +58,10 @@ instance Ord Note where
 semitonesInOctave = toInteger $ (fromEnum (maxBound :: ABC)) - (fromEnum (minBound :: ABC)) + 1
 
 -- |Returns a semitone number for a given note, counting from C.
-semitone :: ABC -> Integer
-semitone = toInteger . fromEnum
+absSemitone :: ABC -> Integer
+absSemitone = toInteger . fromEnum
 
 -- |Calculates distance between two notes in semitones.
 semitoneDistance :: Note -> Note -> Integer
 semitoneDistance (Note n1 o1) (Note n2 o2) =
-    (o2 - o1) * semitonesInOctave + (semitone n2 - semitone n1)
+    (o2 - o1) * semitonesInOctave + (absSemitone n2 - absSemitone n1)
