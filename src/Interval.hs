@@ -20,16 +20,16 @@ instance NoteNum Interval Interval Interval where
 -- arithmetic are very closely related. The 'abstractions'
 -- don't seem to hold up.
 instance NoteNum Note Interval Note where
-    (Note n o) .+ (Interval i) =
+    (Note n (Octave o)) .+ (Interval i) =
         (Note newNote newOctave)
         where noteSemitone = absSemitone n
               (d, m) = (noteSemitone + i) `divMod` semitonesInOctave
               newNote = toEnum $ fromInteger m
-              newOctave = o + d
+              newOctave = Octave (o + d)
     n .- (Interval i) = n .+ (Interval (-i))
 
 instance NoteNum Note Note Interval where
-    (Note n1 o1) .- (Note n2 o2) =
+    (Note n1 (Octave o1)) .- (Note n2 (Octave o2)) =
         (Interval i)
         where absnote n o = o * semitonesInOctave + (absSemitone n)
               a1 = absnote n1 o1

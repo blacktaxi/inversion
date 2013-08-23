@@ -1,3 +1,5 @@
+{-# LANGUAGE TypeSynonymInstances #-}
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
 module Note where
 
 -- |An ABC notation note.
@@ -46,7 +48,12 @@ instance Eq ABC where
 instance Ord ABC where
     compare x y = compare (fromEnum x) (fromEnum y)
 
-type Octave = Integer
+newtype Octave = Octave Integer
+    deriving (Enum, Eq, Ord, Read, Show, Num)
+
+instance Bounded Octave where
+    minBound = Octave 0
+    maxBound = Octave 8
 
 -- |Absolute note.
 data Note = Note ABC Octave
@@ -55,7 +62,7 @@ data Note = Note ABC Octave
 instance Ord Note where
     (Note n1 o1) `compare` (Note n2 o2) = (o1, n1) `compare` (o2, n2)
 
-semitonesInOctave = toInteger $ (fromEnum (maxBound :: ABC)) - (fromEnum (minBound :: ABC)) + 1
+semitonesInOctave = toInteger $ fromEnum (maxBound :: ABC) - fromEnum (minBound :: ABC) + 1
 
 -- |Returns a semitone number for a given note, counting from C.
 absSemitone :: ABC -> Integer
