@@ -5,7 +5,8 @@ import Control.Monad (mapM)
 import Chord (Chord (..))
 import Interval (Interval (..))
 import Note (Note (..))
-import Search (chordFingerings, templateChordFingerings, NoteTemplate (..), ChordTemplate (..))
+import Search (chordFingerings, templateChordFingerings, NoteTemplate (..), 
+    ChordTemplate (..), Singleton (..))
 import Print (ShowFingering (..))
 import qualified Instrument as I
   
@@ -23,7 +24,7 @@ main = do
         fingerings =
             case mode of
             "template" ->
-                let chordTpl = read (unwords args) :: ChordTemplate NoteTemplate [Interval]
+                let chordTpl = read (unwords args) :: ChordTemplate NoteTemplate (Singleton [Interval])
                 in templateChordFingerings chordTpl instrument
             "-" ->
                 let (n, o, ints) = read (unwords args)

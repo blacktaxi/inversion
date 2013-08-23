@@ -22,6 +22,7 @@ class TemplateValue a b where
 
 data TemplateOption a = Any | Exact a | OneOf [a]
     deriving (Eq, Ord, Read, Show)
+
 data NoteTemplate = NoteTemplate (TemplateOption ABC) (TemplateOption Octave)
     deriving (Eq, Ord, Read, Show)
 
@@ -40,8 +41,15 @@ deriving instance (Ord a, Read a, Ord b, Read b, TemplateValue a Note, TemplateV
 
 --instance (Enum a, Bounded a) => TemplateValue [TemplateOption a] [a] where
 
+-- DANGER!
 instance TemplateValue a a where
     enumerate x = [x]
+
+newtype Singleton a = Singleton a
+    deriving (Eq, Ord, Read, Show)
+
+instance TemplateValue (Singleton a) a where
+    enumerate (Singleton x) = [x]
 
 instance TemplateValue (ChordTemplate a b) Chord where
     --enumerate (ChordTemplate ns iss) = [ Chord root is | root <- enumerate ns, is <- enumerate iss]
