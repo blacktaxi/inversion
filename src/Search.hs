@@ -30,17 +30,18 @@ noteFingerings note (Instrument strings frets) =
         fretOnString (n, s) = fmap (StringFingering n) (findFret note s frets)
         nameStringPairs = M.assocs strings
 
--- |Finds all possible fingerings to play a list of notes on a given instrument.
--- @TODO [ChordFingering a] isn't really appropriate.
-notesFingerings :: [Note] -> Instrument a -> [ChordFingering a]
+-- |Finds all possible fingerings to play a list of notes simultaneously
+-- on a given instrument.
+notesFingerings :: [Note] -> Instrument a -> [[StringFingering a]]
 notesFingerings [] _ = []
 notesFingerings [n] instrument =
-    map (\x -> ChordFingering [x]) $ noteFingerings n instrument
+    map (\x -> [x]) $ noteFingerings n instrument
 notesFingerings (n:ns) instr =
     do fstN@(StringFingering used _) <- noteFingerings n instr
-       (ChordFingering restN) <- notesFingerings ns (removeString used instr)
-       return $ ChordFingering (fstN:restN)
+       restN <- notesFingerings ns (removeString used instr)
+       return (fstN:restN)
     where removeString n (Instrument ss f) = Instrument (M.delete n ss) f
 
+-- |Finds all possible fingerings for a given chord.
 chordFingerings :: Chord -> Instrument a -> [ChordFingering a]
-chordFingerings = notesFingerings . toNotes
+chordFingerings c i = map ChordFingering $ notesFingerings (toNotes c) i
