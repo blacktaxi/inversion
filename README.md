@@ -4,7 +4,7 @@ Inversion
 Exploration of chord fingering search.
 
 ```
-$ inversion.exe ukulele (Ds,4,[4,7,11])
+$ inversion.exe -i=ukulele "ChordTemplate (NoteTemplate (Exact Ds) (Exact 4)) (Singleton [Interval 4, Interval 7, Interval 11])"
 
   1-A |-O-|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
   2-E |---|---|-O-|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
@@ -30,7 +30,7 @@ $ inversion.exe ukulele (Ds,4,[4,7,11])
   4-g O---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
         1   2   3   4   5   6   7   8   9  10  11  12  13  14  15  16  17  18
 
-$ inversion.exe template ukulele ChordTemplate (NoteTemplate (Exact Ds) Any) (Singleton [Interval 4, Interval 7, Interval 11])
+$ inversion.exe -i=ukulele "ChordTemplate (NoteTemplate (Exact Ds) Any) (Singleton [Interval 4, Interval 7, Interval 11])"
 
   1-A |-O-|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
   2-E |---|---|-O-|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
