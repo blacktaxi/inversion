@@ -3,7 +3,6 @@ module Search where
 
 import Data.Maybe (catMaybes)
 import qualified Data.Map as M
-import Control.Applicative ((<$>), (<*>))
 
 import Fingering
 import Instrument
@@ -42,7 +41,7 @@ notesFingerings (n:ns) instr =
     do fstN@(StringFingering used _) <- noteFingerings n instr
        restN <- notesFingerings ns (removeString used instr)
        return (fstN:restN)
-    where removeString n (Instrument ss f) = Instrument (M.delete n ss) f
+    where removeString name (Instrument ss f) = Instrument (M.delete name ss) f
 
 -- |Finds all possible fingerings for a given chord.
 chordFingerings :: Chord -> Instrument a -> [ChordFingering a]
@@ -50,4 +49,4 @@ chordFingerings c i = map ChordFingering $ notesFingerings (toNotes c) i
 
 -- ChordTemplate NoteTemplate [Interval] ?
 templateChordFingerings :: ChordTemplate a b -> Instrument c -> [ChordFingering c]
-templateChordFingerings c i = concatMap (\c -> chordFingerings c i) (enumerate c)
+templateChordFingerings c i = concatMap (`chordFingerings` i) (enumerate c)

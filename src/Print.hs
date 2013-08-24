@@ -11,7 +11,6 @@ import Text.Printf (printf, PrintfArg)
 
 import Instrument
 import Fingering
-import Search
 
 class ShowFingering b a where
     showFingering :: Instrument b -> a -> String
@@ -53,4 +52,4 @@ instance (PrintfArg a) => ShowFingering a (ChordFingering a) where
             ss = [showFingeredString string n fretCount maybeFret |
                  (n, f) <- M.assocs stringMap,
                  let string = strings M.! n,
-                 let maybeFret = fmap (\(StringFingering _ f) -> f) f]
+                 let maybeFret = fmap (\(StringFingering _ fret) -> fret) f]

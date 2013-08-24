@@ -6,7 +6,7 @@ module Template where
 
 import Control.Applicative ((<$>), (<*>))
 import Note (Note (..), ABC (..), Octave)
-import Interval (NoteNum (..), Interval (..))
+import Interval (Interval (..))
 import Chord (Chord (..))
 
 class TemplateValue a b where
