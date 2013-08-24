@@ -13,5 +13,6 @@ cabal-version:       >=1.8
 
 executable inversion
   Main-is:             Main.hs
-  build-depends:       base, containers
+  build-depends:       base, containers, cmdargs
   hs-source-dirs:      src
+  ghc-options:         -Wall
