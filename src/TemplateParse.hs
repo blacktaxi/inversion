@@ -1,7 +1,6 @@
 module TemplateParse (parseChordTemplate) where
 
 import Text.ParserCombinators.Parsec
-import Text.Read (readMaybe)
 import Data.Maybe (maybeToList)
 import Control.Applicative ((<$>))
 
@@ -41,12 +40,7 @@ intervals = do
 	return $ (Interval . read) <$> is
 
 exactOrAny :: CharParser () a -> CharParser () (TemplateOption a)
-exactOrAny p = do
-	x <- optionMaybe p
-	return $
-		case x of
-		Nothing -> Any
-		Just v -> Exact v
+exactOrAny p = (maybe Any Exact) <$> (optionMaybe p)
 
 parseChordTemplate :: String -> String -> Either ParseError (ChordTemplate NoteTemplate [Interval])
 parseChordTemplate = parse chordTemplate
