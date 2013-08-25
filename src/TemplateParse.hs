@@ -30,15 +30,10 @@ note = do
 		sharpOrFlat x = x
 
 octave :: CharParser () Octave
-octave = do
-	o <- oneOf "012345678"
-	return $ Octave (read [o])
+octave = Octave . read . (: []) <$> oneOf "012345678"
 
 intervals :: CharParser () [Interval]
-intervals = do
-	_ <- char '*'
-	is <- sepBy1 (many1 digit) (char ',')
-	return $ (Interval . read) <$> is
+intervals = map (Interval . read) <$> (char '*' *> sepBy1 (many1 digit) (char ','))
 
 templateValue :: CharParser () a -> CharParser () (TemplateOption a)
 templateValue p = (maybe Any OneOf) <$> (optionMaybe oneOrManyV)
