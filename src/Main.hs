@@ -4,10 +4,7 @@ module Main where
 
 import System.Console.CmdArgs
 import Chord ()
-import Interval (Interval (..))
-import Note (Note (..))
 import Search (templateChordFingerings)
-import Template (NoteTemplate, ChordTemplate (..), Singleton, TemplateValue)
 import TemplateParse (parseChordTemplate)
 import Print (ShowFingering (..))
 import qualified Instrument as I

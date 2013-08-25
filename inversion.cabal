@@ -10,7 +10,6 @@ copyright:
 category:            Music
 build-type:          Simple
 cabal-version:       >=1.8
-ghc-options:         -Wall -fwarn-incomplete-patterns -fno-warn-missing-signatures -fno-warn-name-shadowing
 
 executable inversion
   Main-is:             Main.hs

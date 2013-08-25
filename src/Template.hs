@@ -31,7 +31,6 @@ data ChordTemplate a b = (TemplateValue a Note, TemplateValue b [Interval]) => C
 
 --instance (Enum a, Bounded a) => TemplateValue [TemplateOption a] [a] where
 
--- DANGER!
 instance TemplateValue a a where
     enumerate x = [x]
 
