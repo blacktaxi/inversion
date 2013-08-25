@@ -3,7 +3,6 @@
 module Main where
 
 import System.Console.CmdArgs
-import Chord ()
 import Search (templateChordFingerings)
 import TemplateParse (parseChordTemplate)
 import Print (ShowFingering (..))

@@ -33,15 +33,17 @@ octave :: CharParser () Octave
 octave = Octave . read . (: []) <$> oneOf "012345678"
 
 intervals :: CharParser () [Interval]
-intervals = map (Interval . read) <$> (char '*' *> sepBy1 (many1 digit) (char ','))
+intervals = map (Interval . read) <$> 
+	(char '{' *> sepBy1 (many1 digit) (char ',') <* char '}')
 
 templateValue :: CharParser () a -> CharParser () (TemplateOption a)
 templateValue p = (maybe Any OneOf) <$> (optionMaybe oneOrManyV)
 	where 
 		oneV = (: []) <$> p
-		-- [x,y,z,...]
 		manyV = char '[' *> sepBy1 p (char ',') <* char ']'
 		oneOrManyV = manyV <|> oneV
 
-parseChordTemplate :: String -> String -> Either ParseError (ChordTemplate NoteTemplate [Interval])
+parseChordTemplate :: String 
+	-> String 
+	-> Either ParseError (ChordTemplate NoteTemplate [Interval])
 parseChordTemplate = parse chordTemplate
