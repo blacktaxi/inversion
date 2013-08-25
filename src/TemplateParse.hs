@@ -29,7 +29,7 @@ pNote :: CharParser () ABC
 pNote = do
     n <- oneOf "ABCDEFG"
     m <- maybe [] ((: []) . sharpOrFlat) <$> optionMaybe (oneOf "#b")
-    return $ read ([n] ++ m)
+    return $ read (n : m)
     where 
         sharpOrFlat '#' = 's'
         sharpOrFlat x = x
@@ -67,7 +67,7 @@ pExplicitIntervals :: CharParser () [Interval]
 pExplicitIntervals = char '{' *> sepBy1 pInterval (char ',') <* char '}'
 
 templateValue :: CharParser () a -> CharParser () (TemplateOption a)
-templateValue p = (maybe Any OneOf) <$> (optionMaybe oneOrManyV)
+templateValue p = maybe Any OneOf <$> optionMaybe oneOrManyV
     where 
         oneV = (: []) <$> p
         manyV = char '[' *> sepBy1 p (char ',') <* char ']'
