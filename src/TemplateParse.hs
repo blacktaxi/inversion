@@ -16,7 +16,7 @@ import Template
 chordTemplate :: CharParser () (ChordTemplate NoteTemplate [Interval])
 chordTemplate =	do
 	note' <- templateValue note
-	octave' <- char '(' *> templateValue octave <* char ')'
+	octave' <- (maybe Any id) <$> optionMaybe (char '(' *> templateValue octave <* char ')')
 	intervals' <- intervals
 	return $ ChordTemplate (NoteTemplate note' octave') intervals'
 
