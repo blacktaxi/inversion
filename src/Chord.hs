@@ -12,4 +12,4 @@ data Chord = Chord Note [Interval]
 -- chord.
 toNotes :: Chord -> [Note]
 toNotes (Chord root intervals) =
-    root : (map (root .+) intervals)
+    map (root .+) intervals
