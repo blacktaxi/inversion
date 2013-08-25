@@ -16,13 +16,16 @@ import Template
 -- <chord_quality> :: "m" | "M" | ""
 -- <interval_num> :: "(" ("maj" | "min" | "aug" | "dim")<number> ")"
 
+infix 0 <??>
+(<??>) = flip (<?>)
+
 pChord :: CharParser () (ChordTemplate NoteTemplate [Interval])
 pChord = do
-    note <- templateValue pNote
-    octave <- fromMaybe Any <$> 
+    note <- "note pattern" <??> templateValue pNote
+    octave <- "octave pattern" <??> fromMaybe Any <$> 
         optionMaybe (char '(' *> templateValue pOctave <* char ')')
     --intervals' <- specIntervals <|> explicitIntervals
-    intervals <- pExplicitIntervals
+    intervals <- "chord spec" <??> pExplicitIntervals
     return $ ChordTemplate (NoteTemplate note octave) intervals
 
 pNote :: CharParser () ABC
@@ -41,7 +44,7 @@ oneOfStr :: [String] -> CharParser () String
 oneOfStr ss = choice (map string ss)
 
 pIntervalName :: CharParser () Interval
-pIntervalName = choiceInterval
+pIntervalName =  "interval name" <??> choiceInterval
     [(In.perf1, ["P1", "perf1", "dim2"])
     ,(In.min2, ["m2", "min2", "A1", "aug1"])
     ,(In.maj2, ["M2", "maj2", "d3", "dim3"])
@@ -70,10 +73,9 @@ templateValue :: CharParser () a -> CharParser () (TemplateOption a)
 templateValue p = maybe Any OneOf <$> optionMaybe oneOrManyV
     where 
         oneV = (: []) <$> p
-        manyV = char '[' *> sepBy1 p (char ',') <* char ']'
+        manyV = "pattern" <??> char '[' *> sepBy1 p (char ',') <* char ']'
         oneOrManyV = manyV <|> oneV
 
 parseChordTemplate :: String 
-    -> String 
     -> Either ParseError (ChordTemplate NoteTemplate [Interval])
-parseChordTemplate = parse pChord
+parseChordTemplate = parse pChord "(chord def)"

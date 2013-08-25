@@ -30,6 +30,9 @@ main = do
              "guitar" -> I.guitar
              x -> error $ "unknown instrument " ++ x
         fingerings =
-            let chordTpl = either (error . show) id $ parseChordTemplate "CHORD DEF" chord
+            let chordTpl = either 
+                    (error . ("Error parsing chord template: " ++) . show) 
+                    id $
+                    parseChordTemplate chord
             in templateChordFingerings chordTpl instr
     mapM (putStrLn . showFingering instr) fingerings
