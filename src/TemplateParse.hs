@@ -10,8 +10,10 @@ import Template
 
 -- <chord> :: <root_note>["("<octave_range>")"](<explicit_intervals>|<chord_spec>)
 -- <octave_range> :: \d|(\d,\d,...)|(\d-\d)
--- <explicit_intervals> :: "*"\d,\d,\d,...
--- <chord_spec> :: ...
+-- <explicit_intervals> :: "{"\d,\d,\d,..."}"
+-- <chord_spec> :: <chord_quality><interval_num><altered_fifth><additional_interval>
+-- <chord_quality> :: "m" | "M" | ""
+-- <interval_num> :: "(" ("maj" | "min" | "aug" | "dim")<number> ")"
 
 chordTemplate :: CharParser () (ChordTemplate NoteTemplate [Interval])
 chordTemplate =	do
