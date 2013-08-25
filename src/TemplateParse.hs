@@ -2,7 +2,7 @@ module TemplateParse (parseChordTemplate) where
 
 import Text.ParserCombinators.Parsec
 import Data.Maybe (maybeToList)
-import Control.Applicative ((<$>))
+import Control.Applicative ((<$>), (*>), (<*))
 
 import Note (ABC (..), Octave (..))
 import Interval (Interval (..))
@@ -15,22 +15,23 @@ import Template
 
 chordTemplate :: CharParser () (ChordTemplate NoteTemplate [Interval])
 chordTemplate =	do
-	rootNote <- Exact <$> note
-	rootOctave <- exactOrAny octave
-	intervals <- intervals
-	return $ ChordTemplate (NoteTemplate rootNote rootOctave) intervals
+	note' <- templateValue note
+	octave' <- char '(' *> templateValue octave <* char ')'
+	intervals' <- intervals
+	return $ ChordTemplate (NoteTemplate note' octave') intervals'
 
 note :: CharParser () ABC
 note = do
 	n <- oneOf "ABCDEFG"
-	m <- maybeToList <$> (optionMaybe (oneOf "sb"))
+	m <- maybe [] ((: []) . sharpOrFlat) <$> optionMaybe (oneOf "#b")
 	return $ read ([n] ++ m)
+	where 
+		sharpOrFlat '#' = 's'
+		sharpOrFlat x = x
 
 octave :: CharParser () Octave
 octave = do
-	_ <- char '('
 	o <- oneOf "012345678"
-	_ <- char ')'
 	return $ Octave (read [o])
 
 intervals :: CharParser () [Interval]
@@ -39,8 +40,13 @@ intervals = do
 	is <- sepBy1 (many1 digit) (char ',')
 	return $ (Interval . read) <$> is
 
-exactOrAny :: CharParser () a -> CharParser () (TemplateOption a)
-exactOrAny p = (maybe Any Exact) <$> (optionMaybe p)
+templateValue :: CharParser () a -> CharParser () (TemplateOption a)
+templateValue p = (maybe Any OneOf) <$> (optionMaybe oneOrManyV)
+	where 
+		oneV = (: []) <$> p
+		-- [x,y,z,...]
+		manyV = char '[' *> sepBy1 p (char ',') <* char ']'
+		oneOrManyV = manyV <|> oneV
 
 parseChordTemplate :: String -> String -> Either ParseError (ChordTemplate NoteTemplate [Interval])
 parseChordTemplate = parse chordTemplate
