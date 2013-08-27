@@ -13,6 +13,6 @@ cabal-version:       >=1.8
 
 executable inversion
   Main-is:             Main.hs
-  build-depends:       base, containers, parsec, cmdargs
+  build-depends:       base, containers, parsec, cmdargs -any
   hs-source-dirs:      src
   ghc-options:         -Wall -fwarn-incomplete-patterns -fno-warn-missing-signatures -fno-warn-name-shadowing
