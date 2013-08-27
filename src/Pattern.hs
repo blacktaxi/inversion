@@ -6,7 +6,7 @@
 module Pattern where
 
 import Control.Applicative ((<$>), (<*>))
-import Data.Maybe (maybeToList)
+import Data.Maybe (maybeToList, catMaybes)
 
 import Note (Note (..), ABC (..), Octave)
 import Interval (Interval (..), invert)
@@ -23,7 +23,7 @@ data PatternValue a = (Enum a, Bounded a) =>
     Exact a |
     OneOf [a]
 
-instance (Enum a, Bounded a) => GenSource (PatternValue a) a where
+instance (GenSource a a, Enum a, Bounded a) => GenSource (PatternValue a) a where
     generate Any = [minBound .. maxBound]
     generate (Exact x) = generate x
     generate (OneOf xs) = concatMap generate xs
@@ -31,37 +31,34 @@ instance (Enum a, Bounded a) => GenSource (PatternValue a) a where
 data PatternOption a =
     ExactlyOne a |
     OneOrNone a
-    --Times Integer a |
-    --TimesRange Integer Ingeter a
-
-instance GenSource (PatternOption a) (Maybe a) where
-    generate (ExactlyOne x) = Just <$> generate x
-    generate (OneOrNone x) = Nothing : (Just <$> generate x)
 
 data NotePattern = NotePattern (PatternValue ABC) (PatternValue Octave)
-
-instance GenSource NotePattern Note where
-    generate (NotePattern np op) = Note <$> generate np <*> generate op
 
 data IntervalPatternValue = IntervalPatternValue
     { interval :: Interval, inversionsAllowed :: Bool }
 
 type IntervalPattern = PatternOption IntervalPatternValue
 
-instance GenSource (PatternOption IntervalPatternValue) Interval where
-    generate p = [ i | x <- generate p :: [Maybe IntervalPatternValue], 
-        i <- concatMap generate (maybeToList x) ]
+data ChordPattern a b = (GenSource a Note, GenSource b [Interval]) =>
+    ChordPattern a b
 
-instance (GenSource a b) => GenSource [a] [b] where
-    generate [] = [[]]
-    generate (p:ps) = [ x : y | x <- generate p, y <- generate ps ]
+instance (GenSource a a) => GenSource (PatternOption a) (Maybe a) where
+    generate (ExactlyOne x) = Just <$> generate x
+    generate (OneOrNone x) = Nothing : (Just <$> generate x)
+
+instance GenSource [PatternOption a] [a] where
+    generate p = map catMaybes $ sequence $ map generate p
+
+instance GenSource [IntervalPattern] [Interval] where
+    generate ps = concatMap (sequence . map generate) (generate ps :: [[IntervalPatternValue]])
+
+instance GenSource NotePattern Note where
+    generate (NotePattern np op) = Note <$> generate np <*> generate op
 
 instance GenSource IntervalPatternValue Interval where
     generate IntervalPatternValue {..} =
         if inversionsAllowed then [interval, invert interval]
         else [interval]
-
-data ChordPattern a b = (GenSource a Note, GenSource b [Interval]) => ChordPattern a b
 
 instance GenSource (ChordPattern a b) Chord where
     generate (ChordPattern ns is) = Chord <$> generate ns <*> generate is
