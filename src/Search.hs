@@ -9,7 +9,7 @@ import Instrument
 import Interval (NoteNum (..), Interval (..))
 import Note (Note (..))
 import Chord (Chord (..), toNotes)
-import Template (TemplateValue (..), ChordTemplate)
+import Pattern (GenSource (..), ChordPattern)
 
 -- |Finds a fingering for a note on a specific string.
 findFret :: Note -- ^ note
@@ -48,5 +48,5 @@ chordFingerings :: Chord -> Instrument a -> [ChordFingering a]
 chordFingerings c i = map ChordFingering $ notesFingerings (toNotes c) i
 
 -- ChordTemplate NoteTemplate [Interval] ?
-templateChordFingerings :: ChordTemplate a b -> Instrument c -> [ChordFingering c]
-templateChordFingerings c i = concatMap (`chordFingerings` i) (enumerate c)
+templateChordFingerings :: ChordPattern a b -> Instrument c -> [ChordFingering c]
+templateChordFingerings c i = concatMap (`chordFingerings` i) (generate c)
