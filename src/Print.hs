@@ -23,7 +23,7 @@ showFingeredString string stringName fretCount fingering =
         (nut, fretBoard) =
             case fingering of
             Nothing -> ("x", emptyBoard)
-            Just Open -> ("O", emptyBoard)
+            Just (Fret 0) -> ("O", emptyBoard)
             Just (Fret fret) -> ("|", concat [if f == fret then "-O-|" else "---|" |
                                              f <- [1 .. fretCount]])
 

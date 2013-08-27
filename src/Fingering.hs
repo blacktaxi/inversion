@@ -5,7 +5,7 @@ module Fingering where
 
 import Instrument (StringName, FretNumber)
 
-data Fret = Open | Fret FretNumber
+newtype Fret = Fret FretNumber
     deriving (Eq, Ord, Read, Show)
 
 data StringFingering a = StringName a => StringFingering a Fret

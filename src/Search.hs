@@ -18,7 +18,7 @@ findFret :: Note -- ^ note
          -> Maybe Fret -- ^ Just fret number if possible, Nothing otherwise
 findFret note (GuitarString openNote) frets =
     case note .- openNote of
-    (Interval x) | x == 0 -> Just Open
+    (Interval x) | x == 0 -> Just (Fret 0)
     (Interval x) | x > 0, x <= frets -> Just $ Fret x
     _ -> Nothing
 
