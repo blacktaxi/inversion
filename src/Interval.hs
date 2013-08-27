@@ -43,8 +43,8 @@ instance NoteNum Note Note Interval where
 -- either?
 (Interval i) .* x = Interval (i * x)
 
-inversion :: Interval -> Interval
-inversion (Interval i) = Interval . abs $ i - semitonesInOctave
+invert :: Interval -> Interval
+invert (Interval i) = Interval . abs $ i - semitonesInOctave
 
 -- Common intervals
 perf1 = Interval 0
