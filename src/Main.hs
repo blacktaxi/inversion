@@ -3,19 +3,26 @@
 module Main where
 
 import System.Console.CmdArgs
-import Search (templateChordFingerings)
+import Data.List (sortBy)
+import Data.Ord (comparing)
+
+import Search (templateChordFingerings, chordRank, fretSpan)
 import TemplateParse (parseChordTemplate)
 import Print (ShowFingering (..))
 import qualified Instrument as I
   
 data Inversion = Search
     {instrument :: String
+    ,showAll :: Bool
+    ,absurdChords :: Bool
     ,chord :: String
     }
     deriving (Data, Typeable, Show, Eq)
 
 inversion = Search
-    {instrument = def &= opt "guitar" &= help "Instrument to search chords for, 'guitar' or 'ukulele'"
+    {instrument = "ukulele" &= help "Instrument to search chords for, 'guitar' or 'ukulele'"
+    ,showAll = False &= help "Show all chords or only 5 best"
+    ,absurdChords = False &= help "Show chords that are impossible to fret"
     ,chord = def &= typ "CHORD DEF" &= help "A chord definition"
     } &=
     program "inversion" &=
@@ -34,5 +41,11 @@ main = do
                     (error . ("Error parsing chord template: " ++) . show) 
                     id $
                     parseChordTemplate chord
-            in templateChordFingerings chordTpl instr
-    mapM (putStrLn . showFingering instr) fingerings
+                unordered = templateChordFingerings chordTpl instr
+            in sortBy (comparing chordRank) unordered
+        fingerings' =
+            if absurdChords then fingerings
+            else filter ((< 6) . fretSpan) fingerings
+        fingerings'' =
+            if showAll then fingerings' else take 5 fingerings'
+    mapM (putStrLn . showFingering instr) fingerings''

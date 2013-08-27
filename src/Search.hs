@@ -50,3 +50,17 @@ chordFingerings c i = map ChordFingering $ notesFingerings (toNotes c) i
 -- ChordTemplate NoteTemplate [Interval] ?
 templateChordFingerings :: ChordPattern a b -> Instrument c -> [ChordFingering c]
 templateChordFingerings c i = concatMap (`chordFingerings` i) (generate c)
+
+fretSpan :: ChordFingering a -> Integer
+fretSpan (ChordFingering ((StringFingering _ (Fret origin)):ss)) =
+    sum $ map 
+            (\(StringFingering _ (Fret x)) ->
+                abs $ if x /= 0 then origin - x else 0)
+            ss
+fretSpan _ = 0
+
+chordRank (ChordFingering []) = error "fingering for 0 strings?"
+chordRank c@(ChordFingering ss) =
+    (-usedStrings, fretSpan c)
+    where
+        usedStrings = length ss
