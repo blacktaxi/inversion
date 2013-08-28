@@ -54,9 +54,12 @@ templateChordFingerings c i = concatMap (`chordFingerings` i) (generate c)
 fretSpan :: ChordFingering a -> Integer
 fretSpan (ChordFingering []) = 0
 fretSpan (ChordFingering ss) =
-    maximum fretNums - minimum fretNums
+    case fingered of
+    [] -> 0
+    fs -> maximum fs - minimum fs
     where
         fretNums = map (\(StringFingering _ (Fret x)) -> x) ss
+        fingered = filter (/= 0) fretNums
 
 --fretSpan (ChordFingering ss) =
 --    sum $ map (\x -> abs $ if x /= 0 then origin - x else 0) fretNums
