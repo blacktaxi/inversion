@@ -52,15 +52,27 @@ templateChordFingerings :: ChordPattern a b -> Instrument c -> [ChordFingering c
 templateChordFingerings c i = concatMap (`chordFingerings` i) (generate c)
 
 fretSpan :: ChordFingering a -> Integer
-fretSpan (ChordFingering ((StringFingering _ (Fret origin)):ss)) =
-    sum $ map 
-            (\(StringFingering _ (Fret x)) ->
-                abs $ if x /= 0 then origin - x else 0)
-            ss
-fretSpan _ = 0
+fretSpan (ChordFingering []) = 0
+fretSpan (ChordFingering ss) =
+    maximum fretNums - minimum fretNums
+    where
+        fretNums = map (\(StringFingering _ (Fret x)) -> x) ss
+
+--fretSpan (ChordFingering ss) =
+--    sum $ map (\x -> abs $ if x /= 0 then origin - x else 0) fretNums
+--    where
+--        fretNums = map (\(StringFingering _ (Fret x)) -> x) ss
+--        origin = 
+--            case filter (/= 0) fretNums of
+--            [] -> 0
+--            fs -> minimum fs
+
+frettable :: ChordFingering a -> Bool
+frettable f = fretSpan f < 6
 
 chordRank (ChordFingering []) = error "fingering for 0 strings?"
 chordRank c@(ChordFingering ss) =
-    (-usedStrings, fretSpan c)
+    (-usedStrings, -openStrings, fretSpan c)
     where
         usedStrings = length ss
+        openStrings = length $ filter (\(StringFingering _ (Fret x)) -> x == 0) ss

@@ -6,7 +6,7 @@ import System.Console.CmdArgs
 import Data.List (sortBy)
 import Data.Ord (comparing)
 
-import Search (templateChordFingerings, chordRank, fretSpan)
+import Search (templateChordFingerings, chordRank, fretSpan, frettable)
 import TemplateParse (parseChordTemplate)
 import Print (ShowFingering (..))
 import qualified Instrument as I
@@ -45,7 +45,7 @@ main = do
             in sortBy (comparing chordRank) unordered
         fingerings' =
             if absurdChords then fingerings
-            else filter ((< 6) . fretSpan) fingerings
+            else filter frettable fingerings
         fingerings'' =
             if showAll then fingerings' else take 5 fingerings'
     mapM (putStrLn . showFingering instr) fingerings''
