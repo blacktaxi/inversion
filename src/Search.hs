@@ -1,6 +1,7 @@
 {-# LANGUAGE PatternGuards #-}
 module Search where
 
+import Data.List (nub)
 import Data.Maybe (catMaybes)
 import qualified Data.Map as M
 
@@ -48,8 +49,8 @@ chordFingerings :: Chord -> Instrument a -> [ChordFingering a]
 chordFingerings c i = map ChordFingering $ notesFingerings (toNotes c) i
 
 -- ChordTemplate NoteTemplate [Interval] ?
-templateChordFingerings :: ChordPattern a b -> Instrument c -> [ChordFingering c]
-templateChordFingerings c i = concatMap (`chordFingerings` i) (generate c)
+templateChordFingerings :: (Eq c) => ChordPattern a b -> Instrument c -> [ChordFingering c]
+templateChordFingerings c i = nub $ concatMap (`chordFingerings` i) (generate c)
 
 fretSpan :: ChordFingering a -> Integer
 fretSpan (ChordFingering []) = 0
