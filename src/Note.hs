@@ -64,6 +64,6 @@ instance Ord Note where
 
 semitonesInOctave = toInteger $ fromEnum (maxBound :: ABC) - fromEnum (minBound :: ABC) + 1
 
--- |Returns a semitone number for a given note, counting from C.
+-- |Returns a semitone number for a given ABC note, counting from C.
 absSemitone :: ABC -> Integer
 absSemitone = toInteger . fromEnum
