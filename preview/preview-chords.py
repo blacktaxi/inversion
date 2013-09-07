@@ -34,17 +34,18 @@ def chord_to_notes(string_notes, chord):
     return [string_notes[k] + v for k, v in oc[::-1]]
 
 def play_chord(out, notes):
-    def play(dly):
+    def play(dly, speedup=False):
         # use different channel for each note/string
         # useful when some strings resolve to the same note
         # sounds better
         for cn, n in zip(xrange(666), notes):
             out.note_on(n, 100, cn + 1)
             time.sleep(dly)
+            if speedup: dly = dly * 0.9
 
-    play(0.25)
+    play(0.25, True)
     time.sleep(0.7)
-    play(0.025)
+    play(0.04, True)
     time.sleep(2)
 
 def init_output_device():
