@@ -1,5 +1,5 @@
 {-# LANGUAGE FlexibleInstances #-}
-module Json where
+module Json () where
 
 import qualified Data.Map as M
 
@@ -8,18 +8,22 @@ import Text.JSON.Generic
 import Text.JSON.Types
 
 import Instrument
+import Fingering
 import Note
+
+jsonObj :: [(String, JSValue)] -> JSValue
+jsonObj defs =
+    JSObject $ Text.JSON.Types.JSONObject { fromJSObject = defs }
+
+toJSDefs :: (JSON a) => [(String, a)] -> [(String, JSValue)]
+toJSDefs = map (\(k, v) -> (k, showJSON v))
 
 newtype MapJSObject k v = MapJSObject { getMap :: M.Map k v }
 
 instance (JSON v) => JSON (MapJSObject String v) where
     readJSON = undefined
     showJSON (MapJSObject { getMap = m }) =
-        JSObject $ Text.JSON.Types.JSONObject {
-            fromJSObject =
-                map (\(k, v) -> (k, showJSON v)) $
-                M.toList m
-        }
+        jsonObj . toJSDefs $ M.toList m
 
 instance JSON ABC where
     readJSON = undefined
@@ -43,9 +47,14 @@ instance JSON GuitarString where
 instance JSON (Instrument String) where
     readJSON = undefined
     showJSON (Instrument strings frets) =
-        JSObject $ Text.JSON.Types.JSONObject {
-            fromJSObject = [
-                ("frets", showJSON frets),
-                ("strings", showJSON $ MapJSObject { getMap = strings })
-            ]
-        }
+        jsonObj [
+            ("frets", showJSON frets),
+            ("strings", showJSON $ MapJSObject { getMap = strings })
+        ]
+
+instance JSON (ChordFingering String) where
+    readJSON = undefined
+    showJSON (ChordFingering fingerings) =
+        jsonObj . toJSDefs $ 
+            map (\(StringFingering name (Fret fret)) -> (name, fret)) $
+            fingerings
