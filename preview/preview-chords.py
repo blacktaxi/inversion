@@ -17,7 +17,6 @@ You can get this JSON from inversion by using JSON output mode.
 from pygame import midi
 import sys
 import time
-import json
 
 def note_to_int(note):
     abc = note[0]
@@ -61,22 +60,33 @@ def init_output_device():
 
     return out
 
-if __name__ == '__main__':
-    x = sys.stdin.read()
-    x = json.loads(x)
-
-    strings = x['instrument']['strings']
-    chords = x['chords']
-
-    string_notes = {k: note_to_int(v) for k, v in strings.items()}
-
+def play_chords(chords):
     midi.init()
     out = init_output_device()
-    for c in chords:
-        ns = chord_to_notes(string_notes, c)
+    for ns in chords:
         print ns
         play_chord(out, ns)
     out.close()
     out.abort()
     try: midi.quit()
     except: pass
+
+def chords_from_json(jsonstr):
+    import json
+    x = json.loads(jsonstr)
+
+    strings = x['instrument']['strings']
+    chords = x['chords']
+
+    string_notes = {k: note_to_int(v) for k, v in strings.items()}
+    return [chord_to_notes(string_notes, c) for c in chords]
+
+if __name__ == '__main__':
+    input_data = sys.stdin.read()
+
+    if len(sys.argv) > 1 and sys.argv[1] == 'json':
+        chords = chords_from_json(input_data)
+    else:
+        chords = map(eval, input_data.splitlines())
+
+    play_chords(chords)
