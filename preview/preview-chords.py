@@ -1,3 +1,19 @@
+#!python
+'''This script can preview (play) chords that are output from inversion.
+
+It accepts JSON in the format like this:
+    {
+        "instrument": {
+            "frets":15,
+            "strings":{"1-e":["E",4],"2-B":["B",3],"3-G":["G",3],"4-D":["D",3],"5-A":["A",2],"6-E":["E",2]}
+        },
+        "chords": [
+            {"6-E":0,"5-A":0,"1-e":0,"3-G":0,"4-D":0,"2-B":0}
+        ]
+    }
+
+You can get this JSON from inversion by using JSON output mode.
+'''
 from pygame import midi
 import sys
 import time
