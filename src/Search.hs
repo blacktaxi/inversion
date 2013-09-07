@@ -49,7 +49,7 @@ chordFingerings :: Chord -> Instrument a -> [ChordFingering a]
 chordFingerings c i = map ChordFingering $ notesFingerings (toNotes c) i
 
 -- ChordTemplate NoteTemplate [Interval] ?
-templateChordFingerings :: (Eq c) => ChordPattern a b -> Instrument c -> [ChordFingering c]
+templateChordFingerings :: (Ord c, Eq c) => ChordPattern a b -> Instrument c -> [ChordFingering c]
 templateChordFingerings c i = nub $ concatMap (`chordFingerings` i) (generate c)
 
 fretSpan :: ChordFingering a -> Integer

@@ -19,15 +19,29 @@ deriving instance (Eq a) => Eq (StringFingering a)
 deriving instance (Ord a, Read a) => Read (StringFingering a)
 
 newtype ChordFingering a = ChordFingering [StringFingering a]
-    deriving (Eq, Read, Show)
+    deriving (Read, Show)
+
+normalizeFingering :: (Ord a) => ChordFingering a -> ChordFingering a
+normalizeFingering (ChordFingering fingerings) =
+    -- @TODO fix the reverse
+    ChordFingering . reverse $ sortBy (comparing stringOrder) fingerings
+    where
+        stringOrder (StringFingering n _) = n
+
+instance (Ord a) => Eq (ChordFingering a) where
+    f1 == f2 =
+        norm f1 == norm f2
+        where
+            stringOrder (StringFingering n _) = n
+            norm (ChordFingering fingerings) =
+                sortBy (comparing stringOrder) fingerings
 
 -- @TODO bad name
 toIntegerNotes :: Instrument a -> ChordFingering a -> [Integer]
-toIntegerNotes (Instrument strings _) (ChordFingering fingerings) =
-    -- @TODO fix the reverse
-    map fingeringToNote $ reverse $ sortBy (comparing stringOrder) fingerings
+toIntegerNotes (Instrument strings _) f =
+    map fingeringToNote fingerings
     where
-        stringOrder (StringFingering n _) = n
+        (ChordFingering fingerings) = normalizeFingering f
         fingeringToNote (StringFingering sname (Fret fret)) =
             let (GuitarString (Note abc (Octave oct))) = strings M.! sname
             -- @TODO copypasta! should probably move this to Note
