@@ -31,18 +31,15 @@ instance JSON ABC where
 
 instance JSON Octave where
     readJSON = undefined
-    showJSON (Octave o) =
-        showJSON o
+    showJSON (Octave o) = showJSON o
 
 instance JSON Note where
     readJSON = undefined
-    showJSON (Note abc octave) =
-        showJSON (abc, octave)
+    showJSON (Note abc octave) = showJSON (abc, octave)
 
 instance JSON GuitarString where
     readJSON = undefined
-    showJSON (GuitarString n) =
-        showJSON n
+    showJSON (GuitarString n) = showJSON n
 
 instance JSON (Instrument String) where
     readJSON = undefined
