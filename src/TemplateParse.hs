@@ -86,8 +86,10 @@ pExplicitIntervals :: CharParser () [IntervalPattern]
 pExplicitIntervals = char '{' *> sepBy1 pIntervalPattern (char ',') <* char '}'
 
 templateValue :: (Bounded a, Enum a) => CharParser () a -> CharParser () (PatternValue a)
-templateValue p = maybe Any OneOf <$> optionMaybe oneOrManyV
-    where 
+templateValue p =
+    Any <$ char '*' <|>
+    maybe Any OneOf <$> optionMaybe oneOrManyV
+    where
         oneV = (: []) <$> p
         manyV = "pattern" <??> char '[' *> sepBy1 p (char ',') <* char ']'
         oneOrManyV = manyV <|> oneV
