@@ -34,11 +34,12 @@ def chord_to_notes(string_notes, chord):
     return [string_notes[k] + v for k, v in oc[::-1]]
 
 def play_chord(out, notes):
+    # use different channel for each note/string
+    # useful when some strings resolve to the same note
+    # sounds better
+    notes = zip(xrange(666), notes)
     def play(dly, speedup=False):
-        # use different channel for each note/string
-        # useful when some strings resolve to the same note
-        # sounds better
-        for cn, n in zip(xrange(666), notes):
+        for cn, n in notes:
             out.note_on(n, 100, cn + 1)
             time.sleep(dly)
             if speedup: dly = dly * 0.9
@@ -47,6 +48,9 @@ def play_chord(out, notes):
     time.sleep(0.7)
     play(0.04, True)
     time.sleep(2)
+
+    for cn, n in notes: out.note_off(n, 100, cn + 1)
+    time.sleep(0.2)
 
 def init_output_device():
     out = midi.Output(midi.get_default_output_id())
@@ -72,4 +76,7 @@ if __name__ == '__main__':
         ns = chord_to_notes(string_notes, c)
         print ns
         play_chord(out, ns)
-    midi.quit()
+    out.close()
+    out.abort()
+    try: midi.quit()
+    except: pass
