@@ -26,7 +26,7 @@ def note_to_int(note):
     abcs = ['C', 'Cs', 'D', 'Ds', 'E', 'F', 'Fs', 'G', 'Gs', 'A', 'As', 'B']
     abcnum = (i for i, n in zip(xrange(12), abcs) if n == abc).next()
 
-    return (octave + 1) * 12 + abcnum
+    return octave * 12 + abcnum
 
 def chord_to_notes(string_notes, chord):
     oc = chord.items()

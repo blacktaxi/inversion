@@ -27,12 +27,12 @@ sixStringGuitar stringNotes =
         stringDefs = stringNotes
         stringNames = ["1-e", "2-B", "3-G", "4-D", "5-A", "6-E"]
 
--- |A 6-string acoustic guitar in Standard E concert tuning.
-guitar = sixStringGuitar [Note E 4, Note B 3, Note G 3,
-                         Note D 3, Note A 2, Note E 2]
-                         15
+-- |A 6-string electric guitar in Standard E concert tuning with 21 fret.
+guitar = sixStringGuitar [Note E 5, Note B 4, Note G 4,
+                         Note D 4, Note A 3, Note E 3]
+                         21
 
 -- |A concert size ukulele in standard tuning.
 ukulele = fromList (zip names defs) 18
           where names = ["1-A", "2-E", "3-C", "4-g"]
-                defs = [Note A 4, Note E 4, Note C 4, Note G 4]
+                defs = [Note A 5, Note E 5, Note C 5, Note G 5]
