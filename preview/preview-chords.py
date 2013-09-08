@@ -43,13 +43,13 @@ def play_chord(out, notes):
             time.sleep(dly)
             if speedup: dly = dly * 0.9
 
-    play(0.25, True)
+    play(0.2)
     time.sleep(0.7)
     play(0.04, True)
     time.sleep(2)
 
     for cn, n in notes: out.note_off(n, 100, cn + 1)
-    time.sleep(0.2)
+    time.sleep(0.1)
 
 def init_output_device():
     out = midi.Output(midi.get_default_output_id())
