@@ -147,7 +147,7 @@ chordSpecToIntervals (ChordSpec {..}) =
 
         chordQ = fromMaybe MajorChord chordQuality
         -- @TODO ugly stuff
-        makeInterval q n =
+        makeInterval (q, n) =
             In.Interval $ neutralI + modI
             where
                 neutralI =
@@ -158,7 +158,7 @@ chordSpecToIntervals (ChordSpec {..}) =
                         10 -> 16
                         11 -> 17 -- ??
                 modI =
-                    case q of
+                    case fromMaybe Major q of
                         Major -> 0
                         Minor -> -1
                         Augmented -> 1
@@ -170,8 +170,7 @@ chordSpecToIntervals (ChordSpec {..}) =
                 MajorChord -> In.maj3
                 MinorChord -> In.min3)
         fifth = Just . ExactlyOne . inversions $ In.perf5
-        main = ExactlyOne . inversions . (\(quality, num) -> makeInterval (fromMaybe Major quality) num) <$>
-            mainInterval
+        main = ExactlyOne . inversions . makeInterval <$> mainInterval
         added = Nothing
 
 parseChordTemplate :: String 
