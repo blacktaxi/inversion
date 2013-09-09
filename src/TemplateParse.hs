@@ -115,11 +115,12 @@ pChordSpec =
     where
         createSpec q mi ai =
             ChordSpec { chordQuality = q, mainInterval = mi, addInterval = ai }
-        pChordQuality =
+        pChordQuality = "chord quality" <??>
             optionMaybe
                 ((try $ MinorChord <$ char 'm') <|>
                 (try $ MajorChord <$ char 'M'))
-        pIntervalQuality =
+        pIntervalQuality = (<??>) "main chord interval" $
+            -- @TODO seems broken
             optionMaybe $
                 choice (map try 
                 [Minor <$ (string "min")
@@ -128,7 +129,7 @@ pChordSpec =
                 ,Augmented <$ (string "aug")
                 ,Dominant <$ (string "dom")])
         pIntervalNumber = read <$> many1 digit
-        pAdditionalInterval =
+        pAdditionalInterval = (<??>) "additional chord note" $
             optionMaybe $
                 read <$> (string "add" *> many1 digit)
         pIntervalSpec =
