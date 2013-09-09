@@ -32,7 +32,7 @@ pChord :: CharParser () (ChordPattern NotePattern [IntervalPattern])
 pChord = do
     note <- "note pattern" <??> pTemplateValue pNote
     octave <- "octave pattern" <??> fromMaybe Any <$> 
-        optionMaybe (char '<' *> pTemplateValue pOctave <* char '>')
+        optionMaybe (char '-' *> pTemplateValue pOctave)
     intervalPatterns <- "chord spec" <??>
         pExplicitIntervals <|> (chordSpecToIntervals <$> pChordSpec)
     return $ ChordPattern (NotePattern note octave) intervalPatterns
