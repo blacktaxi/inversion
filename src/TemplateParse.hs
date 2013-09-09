@@ -30,10 +30,9 @@ oneOfStr ss = choice (map string ss)
 
 pChord :: CharParser () (ChordPattern NotePattern [IntervalPattern])
 pChord = do
-    note <- "note pattern" <??> templateValue pNote
+    note <- "note pattern" <??> pTemplateValue pNote
     octave <- "octave pattern" <??> fromMaybe Any <$> 
-        optionMaybe (char '<' *> templateValue pOctave <* char '>')
-    --intervals' <- specIntervals <|> explicitIntervals
+        optionMaybe (char '<' *> pTemplateValue pOctave <* char '>')
     intervalPatterns <- "chord spec" <??>
         pExplicitIntervals <|> (chordSpecToIntervals <$> pChordSpec)
     return $ ChordPattern (NotePattern note octave) intervalPatterns
@@ -92,9 +91,9 @@ pIntervalPattern = do
 pExplicitIntervals :: CharParser () [IntervalPattern]
 pExplicitIntervals = char '{' *> sepBy1 pIntervalPattern (char ',') <* char '}'
 
-templateValue :: (Bounded a, Enum a) =>
+pTemplateValue :: (Bounded a, Enum a) =>
     CharParser () a -> CharParser () (PatternValue a)
-templateValue p =
+pTemplateValue p =
     Any <$ char '*' <|>
     maybe Any OneOf <$> optionMaybe oneOrManyV
     where
