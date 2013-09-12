@@ -9,7 +9,7 @@ import Control.Applicative ((<$>), (<*>))
 import Data.Maybe (maybeToList, catMaybes)
 
 import Note (Note (..), ABC (..), Octave)
-import Interval (Interval (..), (.+), (.-))
+import Interval (Interval (..))
 import qualified Interval as In
 import Chord (Chord (..))
 
@@ -58,8 +58,9 @@ instance GenSource NotePattern Note where
 
 instance GenSource IntervalPatternValue Interval where
     generate IntervalPatternValue {..} =
-        if inversionsAllowed then 
-            [interval, interval .+ In.octave, interval .- In.octave]
+        if inversionsAllowed then
+            -- @TODO incomplete
+            [interval, interval + In.octave, interval - In.octave]
         else [interval]
 
 instance GenSource (ChordPattern a b) Chord where

@@ -7,42 +7,34 @@ import Note
 newtype Interval = Interval Integer
     deriving (Eq, Ord, Read, Show)
 
--- |Note arithmetic.
-class NoteNum a b c where
-    (.+) :: a -> b -> c
-    (.-) :: a -> b -> c
+instance Num Interval where
+    (Interval i1) + (Interval i2) = Interval $ i1 + i2
+    (Interval i1) - (Interval i2) = Interval $ i1 - i2
+    abs (Interval i) = Interval $ abs i
+    fromInteger = Interval
 
-instance NoteNum Interval Interval Interval where
-    (Interval i1) .+ (Interval i2) = Interval (i1 + i2)
-    (Interval i1) .- (Interval i2) = Interval (i1 - i2)
+    signum = undefined
+    (*) = undefined    
 
--- Here we heavily rely on the fact that note and interval
--- arithmetic are very closely related. The 'abstractions'
--- don't seem to hold up.
-instance NoteNum Note Interval Note where
-    (Note n (Octave o)) .+ (Interval i) =
-        (Note newNote newOctave)
-        where noteSemitone = absSemitone n
-              (d, m) = (noteSemitone + i) `divMod` semitonesInOctave
-              newNote = toEnum $ fromInteger m
-              newOctave = Octave (o + d)
-    n .- (Interval i) = n .+ (Interval (-i))
+-- |Calculate a note withing specified interval of given note.
+addInterval :: Note -> Interval -> Note
+addInterval (Note n (Octave o)) (Interval i) =
+    (Note newNote newOctave)
+    where noteSemitone = absSemitone n
+          (d, m) = (noteSemitone + i) `divMod` semitonesInOctave
+          newNote = toEnum $ fromInteger m
+          newOctave = Octave (o + d)
 
-instance NoteNum Note Note Interval where
-    (Note n1 (Octave o1)) .- (Note n2 (Octave o2)) =
-        (Interval i)
-        where absnote n o = o * semitonesInOctave + (absSemitone n)
-              a1 = absnote n1 o1
-              a2 = absnote n2 o2
-              i = a1 - a2
+-- |Calculate an interval between two notes.
+intervalBetween :: Note -> Note -> Interval
+intervalBetween (Note n1 (Octave o1)) (Note n2 (Octave o2)) =
+    (Interval i)
+    where absnote n o = o * semitonesInOctave + (absSemitone n)
+          a1 = absnote n1 o1
+          a2 = absnote n2 o2
+          i = abs $ a1 - a2
 
-    -- Does it make sense to add notes?
-    (.+) = undefined
-
--- @TODO doesn't belong to IntervalNum and doesn't belong here
--- either?
-(Interval i) .* x = Interval (i * x)
-
+-- |Calculate an inversion of an interval.
 invert :: Interval -> Interval
 invert (Interval i) = Interval . abs $ i - semitonesInOctave
 

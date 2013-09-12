@@ -7,7 +7,7 @@ import qualified Data.Map as M
 
 import Fingering
 import Instrument
-import Interval (NoteNum (..), Interval (..))
+import Interval (Interval (..), intervalBetween)
 import Note (Note (..))
 import Chord (Chord (..), toNotes)
 import Pattern (GenSource (..), ChordPattern)
@@ -18,7 +18,7 @@ findFret :: Note -- ^ note
          -> FretNumber -- ^ number of frets on the string
          -> Maybe Fret -- ^ Just fret number if possible, Nothing otherwise
 findFret note (GuitarString openNote) frets =
-    case note .- openNote of
+    case intervalBetween note openNote of
     (Interval x) | x == 0 -> Just (Fret 0)
     (Interval x) | x > 0, x <= frets -> Just $ Fret x
     _ -> Nothing

@@ -1,6 +1,6 @@
 module Chord where
 
-import Interval
+import Interval (Interval (..), addInterval)
 import Note
 
 -- |A chord is defined by it's root note and all it's
@@ -12,4 +12,4 @@ data Chord = Chord Note [Interval]
 -- chord.
 toNotes :: Chord -> [Note]
 toNotes (Chord root intervals) =
-    map (root .+) intervals
+    map (root `addInterval`) intervals
