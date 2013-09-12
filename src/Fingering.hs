@@ -1,6 +1,7 @@
 {-# LANGUAGE GADTs #-}
 {-# LANGUAGE ConstraintKinds #-}
 {-# LANGUAGE StandaloneDeriving #-}
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
 module Fingering where
 
 import qualified Data.Map as M
@@ -11,7 +12,7 @@ import Instrument (Instrument (..), GuitarString (..), StringName, FretNumber)
 import Note (Note (..), Octave (..), absSemitone)
 
 newtype Fret = Fret FretNumber
-    deriving (Eq, Ord, Read, Show)
+    deriving (Eq, Ord, Read, Show, Num)
 
 data StringFingering a = StringName a => StringFingering a Fret
 deriving instance (Show a) => Show (StringFingering a)

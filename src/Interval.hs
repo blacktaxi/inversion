@@ -10,6 +10,7 @@ newtype Interval = Interval Integer
 instance Num Interval where
     (Interval i1) + (Interval i2) = Interval $ i1 + i2
     (Interval i1) - (Interval i2) = Interval $ i1 - i2
+    negate (Interval i) = Interval $ negate i
     abs (Interval i) = Interval $ abs i
     fromInteger = Interval
 
@@ -33,6 +34,9 @@ intervalBetween (Note n1 (Octave o1)) (Note n2 (Octave o2)) =
           a1 = absnote n1 o1
           a2 = absnote n2 o2
           i = abs $ a1 - a2
+
+multiplyInterval :: Interval -> Integer -> Interval
+multiplyInterval (Interval i) x = Interval $ i * x
 
 -- |Calculate an inversion of an interval.
 invert :: Interval -> Interval
