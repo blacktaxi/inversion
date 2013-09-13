@@ -8,28 +8,26 @@ import qualified Data.Map as M
 import Data.List (sortBy)
 import Data.Ord (comparing)
 
-import Instrument (Instrument (..), GuitarString (..), StringName, FretNumber)
+import Instrument (Instrument (..), InstrumentString (..), FretNumber)
 import Note (Note (..), Octave (..), absSemitone)
 
 newtype Fret = Fret FretNumber
     deriving (Eq, Ord, Read, Show, Num)
 
-data StringFingering a = StringName a => StringFingering a Fret
-deriving instance (Show a) => Show (StringFingering a)
-deriving instance (Eq a) => Eq (StringFingering a)
-deriving instance (Ord a, Read a) => Read (StringFingering a)
+data StringFingering = StringFingering String (Maybe Fret)
+    deriving (Show, Eq, Ord, Read)
 
-newtype ChordFingering a = ChordFingering [StringFingering a]
+newtype ChordFingering = ChordFingering [StringFingering]
     deriving (Read, Show)
 
-normalizeFingering :: (Ord a) => ChordFingering a -> ChordFingering a
+normalizeFingering :: ChordFingering -> ChordFingering
 normalizeFingering (ChordFingering fingerings) =
     -- @TODO fix the reverse
     ChordFingering . reverse $ sortBy (comparing stringOrder) fingerings
     where
         stringOrder (StringFingering n _) = n
 
-instance (Ord a) => Eq (ChordFingering a) where
+instance Eq ChordFingering where
     f1 == f2 =
         norm f1 == norm f2
         where
@@ -38,12 +36,13 @@ instance (Ord a) => Eq (ChordFingering a) where
                 sortBy (comparing stringOrder) fingerings
 
 -- @TODO bad name
-toIntegerNotes :: Instrument a -> ChordFingering a -> [Integer]
+toIntegerNotes :: Instrument -> ChordFingering -> [Integer]
 toIntegerNotes (Instrument strings _) f =
     map fingeringToNote fingerings
     where
+        stringsMap = M.fromList strings
         (ChordFingering fingerings) = normalizeFingering f
-        fingeringToNote (StringFingering sname (Fret fret)) =
-            let (GuitarString (Note abc (Octave oct))) = strings M.! sname
+        fingeringToNote (StringFingering sname (Just (Fret fret))) =
+            let (InstrumentString (Note abc (Octave oct))) = stringsMap M.! sname
             -- @TODO copypasta! should probably move this to Note
             in (absSemitone abc) + (oct * 12) + fret

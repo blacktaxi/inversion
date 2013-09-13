@@ -2,6 +2,7 @@
 module Json () where
 
 import qualified Data.Map as M
+import Control.Applicative ((<$>))
 
 import Text.JSON
 import Text.JSON.Generic
@@ -37,21 +38,21 @@ instance JSON Note where
     readJSON = undefined
     showJSON (Note abc octave) = showJSON (abc, octave)
 
-instance JSON GuitarString where
+instance JSON InstrumentString where
     readJSON = undefined
-    showJSON (GuitarString n) = showJSON n
+    showJSON (InstrumentString n) = showJSON n
 
-instance JSON (Instrument String) where
+instance JSON Instrument where
     readJSON = undefined
     showJSON (Instrument strings frets) =
         jsonObj [
             ("frets", showJSON frets),
-            ("strings", showJSON $ MapJSObject { getMap = strings })
+            ("strings", showJSON $ MapJSObject { getMap = M.fromList strings })
         ]
 
-instance JSON (ChordFingering String) where
+instance JSON ChordFingering where
     readJSON = undefined
     showJSON (ChordFingering fingerings) =
         jsonObj . toJSDefs $ 
-            map (\(StringFingering name (Fret fret)) -> (name, fret)) $
+            map (\(StringFingering name fret) -> (name, (\(Fret f) -> f) <$> fret)) $
             fingerings

@@ -3,64 +3,77 @@
 {-# LANGUAGE DoAndIfThenElse #-}
 module Search where
 
-import Data.List (nub)
+import Data.List (nub, deleteBy)
 import Data.Maybe (catMaybes)
 import qualified Data.Map as M
 import Control.Monad (guard)
+import Control.Applicative ((<$>))
 
 import Fingering
 import Instrument
 import Interval (Interval (..), intervalBetween, addInterval, multiplyInterval)
 import qualified Interval as In
 import Note (Note (..), Octave (..))
-import Chord (Chord (..), toNotes)
+import Chord (Chord (..), ChordSpec (..), ChordInterval (..), toNotes)
 import Pattern (GenSource (..), ChordPattern)
 
 -- |Finds a fingering for a note on a specific string.
 findFret :: Note -- ^ note
-         -> GuitarString -- ^ a string
+         -> InstrumentString -- ^ a string
          -> Fret
-findFret note (GuitarString openNote) =
+findFret note (InstrumentString openNote) =
     Fret i
     where (Interval i) = intervalBetween note openNote
 
 -- |Finds all possible fingerings to play a single note on a given instrument.
-noteFingerings :: Note -> Instrument a -> [StringFingering a]
+noteFingerings :: Note -> Instrument -> [StringFingering]
 noteFingerings note (Instrument strings frets) =
-    catMaybes possibleFingerings
+    possibleFingerings
     where
         possibleFingerings = map fretOnString nameStringPairs
-        fretOnString (n, s) = fmap (StringFingering n) (findFret note s frets)
-        nameStringPairs = M.assocs strings
+        fretOnString (n, s) = StringFingering n (Just $ findFret note s)
+        nameStringPairs = strings
 
 -- |Finds all possible fingerings to play a list of notes simultaneously
 -- on a given instrument.
-notesFingerings :: [Note] -> Instrument a -> [[StringFingering a]]
-notesFingerings [] _ = []
-notesFingerings [n] instrument =
-    map (: []) $ noteFingerings n instrument
-notesFingerings (n:ns) instr =
-    do fstN@(StringFingering used _) <- noteFingerings n instr
-       restN <- notesFingerings ns (removeString used instr)
-       return (fstN:restN)
-    where removeString name (Instrument ss f) = Instrument (M.delete name ss) f
+--notesFingerings :: [Note] -> Instrument -> [[StringFingering]]
+--notesFingerings [] _ = []
+--notesFingerings [n] instrument =
+--    map (: []) $ noteFingerings n instrument
+--notesFingerings (n:ns) instr =
+--    do fstN@(StringFingering used _) <- noteFingerings n instr
+--       restN <- notesFingerings ns (removeString used instr)
+--       return (fstN:restN)
+--    where
+--        removeString name (Instrument ss f) =
+--            Instrument (deleteBy (\(n1, _) (n2, _) -> n1 == n2) name ss) f
 
 -- |Finds all possible fingerings for a given chord.
-chordFingerings :: Chord -> Instrument a -> [ChordFingering a]
-chordFingerings c i = map ChordFingering $ notesFingerings (toNotes c) i
+chordFingerings :: ChordSpec -> Instrument -> [ChordFingering]
+--chordFingerings c i = map ChordFingering $ notesFingerings (toNotes c) i
+chordFingerings (ChordSpec root intervals) (Instrument strings frets) =
+    map makeChordFingering fs
+    where
+        makeChordFingering frets =
+            ChordFingering $
+            map (uncurry StringFingering) $ zip stringNames frets
+        stringNames = map fst strings
+        stringDefs = map snd strings
+        fs = fingerings intervals root stringDefs frets
 
 -- ChordTemplate NoteTemplate [Interval] ?
-templateChordFingerings :: (Ord c, Eq c) => ChordPattern a b -> Instrument c -> [ChordFingering c]
-templateChordFingerings c i = nub $ concatMap (`chordFingerings` i) (generate c)
+--templateChordFingerings :: ChordPattern a b -> Instrument -> [ChordFingering]
+--templateChordFingerings c i = nub $ concatMap (`chordFingerings` i) (generate c)
 
-fretSpan :: ChordFingering a -> Integer
+-- |Calculate how 'wide' the fingering is.
+fretSpan :: ChordFingering -> Integer
 fretSpan (ChordFingering []) = 0
 fretSpan (ChordFingering ss) =
     case fingered of
     [] -> 0
     fs -> maximum fs - minimum fs
     where
-        fretNums = map (\(StringFingering _ (Fret x)) -> x) ss
+        fretNums = map (\(Fret x) -> x) $ catMaybes $ map (\(StringFingering _ f) -> f) ss
         fingered = filter (/= 0) fretNums
 
 --fretSpan (ChordFingering ss) =
@@ -72,15 +85,17 @@ fretSpan (ChordFingering ss) =
 --            [] -> 0
 --            fs -> minimum fs
 
-frettable :: ChordFingering a -> Bool
+frettable :: ChordFingering -> Bool
 frettable f = fretSpan f < 6
 
 chordRank (ChordFingering []) = error "fingering for 0 strings?"
 chordRank c@(ChordFingering ss) =
     (-usedStrings, -openStrings, fretSpan c)
     where
-        usedStrings = length ss
-        openStrings = length $ filter (\(StringFingering _ (Fret x)) -> x == 0) ss
+        frets = map (\(StringFingering _ f) -> f) ss
+        usedStrings = length $ catMaybes frets
+        openStrings =
+            length $ filter (\(Fret x) -> x == 0) (catMaybes frets)
 
 
 
@@ -94,15 +109,6 @@ chordRank c@(ChordFingering ss) =
 
 --data GuitarData a = (a, a, a, a, a, a)
 --data UkuleleData a = (a, a, a, a)
-
-
--- |An interval in a chord spec.
-data ChordInterval = ChordInterval
-    { getInterval :: Interval
-    , getIsOptional :: Bool
-    , getCanUseMany :: Bool
-    , getFlexibleOctave :: Bool
-    }
 
 -- |Finds all notes which will constitute a specified interval
 -- with a specified root note.
@@ -136,7 +142,7 @@ pickIntervals availableIntervals = do
 -- intervals on a given string.
 intervalsOnString :: [ChordInterval]
                   -> Note
-                  -> GuitarString
+                  -> InstrumentString
                   -> [(Fret, ChordInterval, [ChordInterval])]
 intervalsOnString intervals rootNote string = do
     (interval, restIntervals) <- pickIntervals intervals
@@ -144,11 +150,12 @@ intervalsOnString intervals rootNote string = do
     let fret = findFret note string
     return $ (fret, interval, restIntervals)
 
-fingerings :: [ChordInterval]   -- ^ chord spec
-           -> Note              -- ^ chord root note
-           -> [GuitarString]    -- ^ instrument strings
-           -> FretNumber        -- ^ how many frets the instrument has
-           -> [[Fret]]          -- ^ fingerings
+-- |Find all fingerings for the chord spec on a given instrument spec.
+fingerings :: [ChordInterval] -- ^ chord spec
+           -> Note -- ^ chord root note
+           -> [InstrumentString] -- ^ instrument strings
+           -> FretNumber -- ^ how many frets the instrument has
+           -> [[Maybe Fret]] -- ^ fingerings
 fingerings chordIntervals _ [] _ = do
     -- if we have any non-optional intervals left to assign but no available
     -- strings, this fingering combination should be discarded
@@ -158,9 +165,11 @@ fingerings chordIntervals rootNote strings frets = do
     -- take next string, keeping what's left
     (string, restStrings) <- zip strings (tail (iterate tail strings))
     -- take next fingering for any of the intervals on this string
-    (fret, _, restIntervals) <- intervalsOnString chordIntervals rootNote string
+    (fret, _, restIntervals) <-
+        (Nothing, Nothing, chordIntervals) :
+        (map (\(x, y, z) -> ((Just x), (Just y), z)) $ intervalsOnString chordIntervals rootNote string)
     -- the fingering should be withing the instruments fretboard
-    guard $ fret >= 0 && fret <= (fromInteger frets)
+    guard $ maybe True (\fret -> fret >= 0 && fret <= (fromInteger frets)) fret
     -- take next fingerings for the rest of the strings (and intervals)
     f <- fingerings restIntervals rootNote restStrings frets
     return $ fret : f

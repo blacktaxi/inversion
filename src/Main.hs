@@ -11,7 +11,7 @@ import qualified Data.Map as M
 import Text.JSON
 import Text.JSON.Types
 
-import Search (templateChordFingerings, chordRank, fretSpan, frettable)
+import Search (chordFingerings, chordRank, fretSpan, frettable)
 import TemplateParse (parseChordTemplate)
 import Print (ShowFingering (..))
 import Fingering (toIntegerNotes)
@@ -45,15 +45,15 @@ main = do
     Search{..} <- cmdArgs inversion
     let instr = 
             case instrument of
-             "ukulele" -> I.ukulele
-             "guitar" -> I.guitar
-             x -> error $ "unknown instrument " ++ x
+                "ukulele" -> I.ukulele
+                "guitar" -> I.guitar
+                x -> error $ "unknown instrument " ++ x
         fingerings =
             let chordTpl = either 
                     (error . ("Error parsing chord template: " ++) . show) 
                     id $
                     parseChordTemplate chord
-                unordered = templateChordFingerings chordTpl instr
+                unordered = chordFingerings chordTpl instr
             in sortBy (comparing chordRank) unordered
         fingerings' =
             if absurdChords then fingerings
