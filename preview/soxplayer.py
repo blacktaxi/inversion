@@ -28,7 +28,7 @@ def render_chord(notes, sample_rate):
     for n in notes:
         voices.append([notenum_to_freq(n - 12 * 4), 1.0 / len(notes) * 0.5])
 
-    for _ in xrange(sample_rate * 5):
+    for _ in xrange(sample_rate * 3):
         tick()
         yield bolt[1]
 
