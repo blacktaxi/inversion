@@ -3,9 +3,10 @@
 import math
 
 def notenum_to_freq(notenum):
+    """Converts MIDI note number to frequency."""
     f0 = 440.0
     a = 2 ** (1.0 / 12.0)
-    return f0 * (a ** notenum)
+    return f0 * (a ** (notenum - 69)) # 69 is A-4 in MIDI
 
 def waveform(t):
     return 0.3 * (t - float(int(t / math.pi)) * math.pi) + (0.7 * math.sin(t))
@@ -26,7 +27,7 @@ def render_chord(notes, sample_rate):
         tick_voices()
 
     for n in notes:
-        voices.append([notenum_to_freq(n - 12 * 4), 1.0 / len(notes) * 0.5])
+        voices.append([notenum_to_freq(n), 1.0 / len(notes) * 0.5])
 
     for _ in xrange(sample_rate * 3):
         tick()
