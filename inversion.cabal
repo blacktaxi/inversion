@@ -16,3 +16,10 @@ executable inversion
   build-depends:       base, containers, parsec, cmdargs, json == 0.7
   hs-source-dirs:      src
   ghc-options:         -Wall -fwarn-incomplete-patterns -fno-warn-missing-signatures -fno-warn-name-shadowing
+
+executable audio-preview
+  Main-is:             Preview.hs
+  build-depends:       base, binary, bytestring
+  hs-source-dirs:      src
+  ghc-options:         -Wall -fwarn-incomplete-patterns -fno-warn-missing-signatures -fno-warn-name-shadowing
+
