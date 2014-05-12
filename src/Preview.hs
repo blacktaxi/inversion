@@ -34,18 +34,18 @@ sine freq = \t -> sin $ freq * (2.0 * pi) * t
 
 saw :: Time -> Signal
 saw freq t = (1.0 - frac) * 2.0 - 1.0
-	where (_, frac) = properFraction (t * freq)
+    where (_, frac) = properFraction (t * freq)
 
 triangle :: Time -> Signal
 triangle freq t =
-	if odd i
-		then (1.0 - frac) * 2.0 - 1.0
-		else frac * 2.0 - 1.0
-	where (i, frac) = properFraction (t * freq)
+    if odd i
+        then (1.0 - frac) * 2.0 - 1.0
+        else frac * 2.0 - 1.0
+    where (i, frac) = properFraction (t * freq)
 
 square :: Time -> Signal
 square freq t = if odd i then 1.0 else -1.0
-	where (i, _) = properFraction (t * freq)
+    where (i, _) = properFraction (t * freq)
 
 volume :: Amplitude -> Signal -> Signal
 volume x s = (* x) <$> s
@@ -55,45 +55,45 @@ fade speed = exp . (* speed) . (* (-1.0))
 
 midiNoteToFreq :: (Floating a) => Int -> a
 midiNoteToFreq n = f0 * (a ** (fromIntegral n - midiA4))
-	where
-		f0 = 440.0
-		a = 2 ** (1.0 / 12.0)
-		midiA4 = 69
+    where
+        f0 = 440.0
+        a = 2 ** (1.0 / 12.0)
+        midiA4 = 69
 
 niceNote :: Int -> Signal
 niceNote n = mix voice1 voice2
-	where
-		voice1 = amp (volume 0.1 $ fade 1.9) (square (midiNoteToFreq n))
-		voice2 = amp (volume 0.2 $ fade 4.0) (sine (midiNoteToFreq n))
+    where
+        voice1 = amp (volume 0.1 $ fade 1.9) (square (midiNoteToFreq n))
+        voice2 = amp (volume 0.2 $ fade 4.0) (sine (midiNoteToFreq n))
 
 chord :: [Int] -> Signal
 chord notes =
-	foldr mix silence noteWaves
-	where
-		noteWaves = zipWith (\i n -> delay (fromIntegral i * 0.05) $ niceNote n) [0..] notes
+    foldr mix silence noteWaves
+    where
+        noteWaves = zipWith (\i n -> delay (fromIntegral i * 0.05) $ niceNote n) [0..] notes
 
 clip :: Amplitude -> Amplitude -> Signal -> Signal
 clip low high s = max low . min high . s
 
 render :: Time -> Time -> Int -> Signal -> [Int16]
 render startT endT sampleRate s =
-	[asInt16 (sample * sampleTime) | sample <- [0..totalSamples]]
-	where
-		clipped = (clip (-1.0) 1.0 s) :: Time -> Amplitude
-		sampleTime = 1.0 / (fromIntegral sampleRate)
-		minSig = fromIntegral (minBound :: Int16)
-		maxSig = fromIntegral (maxBound :: Int16)
-		toInt16 x = (truncate (minSig + ((x + 1.0) / 2.0 * (maxSig - minSig))))
-		asInt16 = (toInt16 <$> clipped) :: Time -> Int16
-		totalSamples = (endT - startT) / sampleTime
+    [asInt16 (sample * sampleTime) | sample <- [0..totalSamples]]
+    where
+        clipped = (clip (-1.0) 1.0 s) :: Time -> Amplitude
+        sampleTime = 1.0 / (fromIntegral sampleRate)
+        minSig = fromIntegral (minBound :: Int16)
+        maxSig = fromIntegral (maxBound :: Int16)
+        toInt16 x = (truncate (minSig + ((x + 1.0) / 2.0 * (maxSig - minSig))))
+        asInt16 = (toInt16 <$> clipped) :: Time -> Int16
+        totalSamples = (endT - startT) / sampleTime
 
 main :: IO ()
 main = do
-	chordStrings <- fmap lines getContents
-	forM_ chordStrings $ \s -> do
-		BS.putStr $ playChord s
-	where
-		playChord notesStr = BS.concat $ map encode (render 0.0 3.5 44100 sound)
-			where
-				notes = (read notesStr) :: [Int]
-				sound = chord notes
+    chordStrings <- fmap lines getContents
+    forM_ chordStrings $ \s -> do
+        BS.putStr $ playChord s
+    where
+        playChord notesStr = BS.concat $ map encode (render 0.0 3.5 44100 sound)
+            where
+                notes = (read notesStr) :: [Int]
+                sound = chord notes
