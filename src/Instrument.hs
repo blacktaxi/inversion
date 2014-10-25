@@ -8,7 +8,7 @@ import qualified Data.Map as M
 import Note
 
 -- |A guitar string with specified open string note.
-newtype InstrumentString a = InstrumentString Note
+newtype GuitarString = GuitarString Note
     deriving (Eq, Read, Show)
 
 type StringName a = (Ord a, Eq a)
