@@ -12,7 +12,7 @@ import Text.Printf (printf, PrintfArg)
 import Instrument
 import Fingering
 
-class ShowFingering b a where
+class ShowFingering a where
     showFingering :: Instrument -> a -> String
 
 showFingeredString :: InstrumentString -> String -> FretNumber -> Maybe Fret -> String
@@ -34,7 +34,7 @@ showNumberedBoard board fretCount =
     unlines (board ++ [fretNumbers])
     where fretNumbers = "     " ++ (showFretNumbers fretCount)
           
-instance (PrintfArg a) => ShowFingering a StringFingering where
+instance ShowFingering StringFingering where
     showFingering (Instrument strings fretCount) (StringFingering name fingering) =
         showNumberedBoard ss fretCount
         where
@@ -42,7 +42,7 @@ instance (PrintfArg a) => ShowFingering a StringFingering where
             ss = [if n == name then showFingeredString s n fretCount fingering
                  else mutedString s n | (n, s) <- strings]
 
-instance (PrintfArg a) => ShowFingering a ChordFingering where
+instance ShowFingering ChordFingering where
     showFingering (Instrument strings fretCount) (ChordFingering fingerings) =
         showNumberedBoard ss fretCount
         where

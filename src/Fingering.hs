@@ -7,6 +7,8 @@ module Fingering where
 import qualified Data.Map as M
 import Data.List (sortBy)
 import Data.Ord (comparing)
+import Data.Maybe (catMaybes)
+import Control.Applicative ((<$>))
 
 import Instrument (Instrument (..), InstrumentString (..), FretNumber)
 import Note (Note (..), Octave (..), absSemitone)
@@ -38,11 +40,15 @@ instance Eq ChordFingering where
 -- @TODO bad name
 toIntegerNotes :: Instrument -> ChordFingering -> [Integer]
 toIntegerNotes (Instrument strings _) f =
-    map fingeringToNote fingerings
+    catMaybes $ map fingeringToNote fingerings
     where
         stringsMap = M.fromList strings
         (ChordFingering fingerings) = normalizeFingering f
-        fingeringToNote (StringFingering sname (Just (Fret fret))) =
-            let (InstrumentString (Note abc (Octave oct))) = stringsMap M.! sname
-            -- @TODO copypasta! should probably move this to Note
-            in (absSemitone abc) + (oct * 12) + fret
+
+        fingeringToNote (StringFingering sname maybeFret) =
+            fretToNote <$> maybeFret
+            where
+                fretToNote (Fret fret) =
+                    let (InstrumentString (Note abc (Octave oct))) = stringsMap M.! sname
+                    -- @TODO copypasta! should probably move this to Note
+                    in (absSemitone abc) + (oct * 12) + fret

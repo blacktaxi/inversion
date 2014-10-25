@@ -1,5 +1,5 @@
 {-# LANGUAGE FlexibleInstances #-}
-module Json () where
+module Json (MapJSObject) where
 
 import qualified Data.Map as M
 import Control.Applicative ((<$>))

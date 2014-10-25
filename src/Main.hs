@@ -48,21 +48,26 @@ main = do
                 "ukulele" -> I.ukulele
                 "guitar" -> I.guitar
                 x -> error $ "unknown instrument " ++ x
+        chordTpl = either 
+            (error . ("Error parsing chord template: " ++) . show)
+            id $
+            parseChordTemplate chord
         fingerings =
-            let chordTpl = either 
-                    (error . ("Error parsing chord template: " ++) . show) 
-                    id $
-                    parseChordTemplate chord
-                unordered = chordFingerings chordTpl instr
-            in sortBy (comparing chordRank) unordered
+            let unordered = chordFingerings chordTpl instr
+            in 
+                --unordered
+                sortBy (comparing chordRank) unordered
         fingerings' =
             if absurdChords then fingerings
             else filter frettable fingerings
         fingerings'' =
             if showAll then fingerings' else take 5 fingerings'
 
+    putStrLn $ show chordTpl
+
     case outputMode of
-        Pretty -> mapM (putStrLn . showFingering instr) fingerings''
+        Pretty ->
+            mapM (putStrLn . showFingering instr) fingerings''
         Json ->
             let x = [("instrument", showJSON instr)
                     ,("chords", showJSON fingerings'')]

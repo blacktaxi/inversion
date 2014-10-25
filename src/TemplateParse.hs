@@ -29,7 +29,7 @@ infix 0 <??>
 oneOfStr :: [String] -> CharParser () String
 oneOfStr ss = choice (map string ss)
 
-pChord :: CharParser () C.ChordSpec
+pChord :: CharParser () ChordPattern
 pChord = do
     note <- "note pattern" <??> pTemplateValue pNote
     octave <- "octave pattern" <??> fromMaybe Any <$> 
@@ -85,9 +85,12 @@ pIntervalPattern = do
     noInversions <- isJust <$> optionMaybe (char '=')
     intervalDef <- pInterval
     isOptional <- isJust <$> optionMaybe (char '?')
-    let ipv = IntervalPatternValue { interval = intervalDef, inversionsAllowed = not noInversions }
-    let po = if isOptional then OneOrNone ipv else ExactlyOne ipv
-    return $ po
+    let ipv = IntervalPattern {
+        interval = intervalDef
+        , isOptional = isOptional
+        , canUseMany = False -- @TODO FIX
+        , fixedOctave = noInversions }
+    return $ ipv
 
 pExplicitIntervals :: CharParser () [IntervalPattern]
 pExplicitIntervals = char '{' *> sepBy1 pIntervalPattern (char ',') <* char '}'
@@ -105,9 +108,9 @@ pTemplateValue p =
 data ChordQuality = MinorChord | MajorChord
 data IntervalQuality = Minor | Major | Diminished | Augmented | Dominant
 data ChordSpec = ChordSpec 
-    { chordQuality :: Maybe ChordQuality,
-    mainInterval :: Maybe (Maybe IntervalQuality, Integer),
-    addInterval :: Maybe Integer
+    { chordQuality :: Maybe ChordQuality
+    , mainInterval :: Maybe (Maybe IntervalQuality, Integer)
+    , addInterval :: Maybe Integer
     }
 
 pChordSpec :: CharParser () ChordSpec
@@ -141,10 +144,18 @@ chordSpecToIntervals :: ChordSpec -> [IntervalPattern]
 chordSpecToIntervals (ChordSpec {..}) =
     root : (catMaybes $ third : fifth : main : added : [])
     where
-        ipat x y = IntervalPatternValue { interval = x, inversionsAllowed = y }
-        inversions x = ipat x True
-        noInversions x = ipat x False
-        root = ExactlyOne $ noInversions (In.Interval 0)
+        --ipat x y w q = IntervalPattern {
+        --    interval = x,
+        --    isOptional = y,
+        --    canUseMany = w,
+        --    fixedOctave = q }
+        --inversions x = ipat x True
+        --noInversions x = ipat x False
+        root = IntervalPattern {
+            interval = In.unison,
+            isOptional = False,
+            canUseMany = True,
+            fixedOctave = True }
 
         chordQ = fromMaybe MajorChord chordQuality
         -- @TODO ugly stuff
@@ -166,14 +177,28 @@ chordSpecToIntervals (ChordSpec {..}) =
                         Diminished -> -2
                         Dominant -> error "ugh"
 
-        third = Just . ExactlyOne . noInversions $
-            (case chordQ of
-                MajorChord -> In.maj3
-                MinorChord -> In.min3)
-        fifth = Just . ExactlyOne . inversions $ In.perf5
-        main = ExactlyOne . inversions . makeInterval <$> mainInterval
+        third = Just ipat
+            where
+                ipat = IntervalPattern {
+                    interval = i,
+                    isOptional = False,
+                    canUseMany = True,
+                    fixedOctave = False }
+                i = case chordQ of
+                        MajorChord -> In.maj3
+                        MinorChord -> In.min3
+        fifth = Just $ IntervalPattern {
+            interval = In.perf5,
+            isOptional = False,
+            canUseMany = True,
+            fixedOctave = False }
+        main = (\x -> IntervalPattern {
+            interval = x,
+            isOptional = False,
+            canUseMany = True,
+            fixedOctave = False }) . makeInterval <$> mainInterval
+            --ExactlyOne . inversions . makeInterval <$> mainInterval
         added = Nothing
 
-parseChordTemplate :: String 
-    -> Either ParseError (ChordPattern NotePattern [IntervalPattern])
+parseChordTemplate :: String -> Either ParseError ChordPattern
 parseChordTemplate = parse pChord "(chord def)"

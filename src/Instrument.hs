@@ -7,6 +7,15 @@ import qualified Data.Map as M
 
 import Note
 
+
+--class InstrumentData i where
+--    create :: a -> i
+
+--data InstrumentData i a = InstrumentData a
+
+--data GuitarData a = (a, a, a, a, a, a)
+--data UkuleleData a = (a, a, a, a)
+
 -- |A guitar string with specified open string note.
 newtype InstrumentString = InstrumentString Note
     deriving (Eq, Read, Show)

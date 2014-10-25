@@ -14,8 +14,9 @@ import Instrument
 import Interval (Interval (..), intervalBetween, addInterval, multiplyInterval)
 import qualified Interval as In
 import Note (Note (..), Octave (..))
-import Chord (Chord (..), ChordSpec (..), ChordInterval (..), toNotes)
-import Pattern (GenSource (..), ChordPattern)
+import Chord (Chord (..), toNotes)
+import Pattern (GenSource (..), ChordPattern (..), NotePattern (..),
+    IntervalPattern (..))
 
 -- |Finds a fingering for a note on a specific string.
 findFret :: Note -- ^ note
@@ -49,9 +50,9 @@ noteFingerings note (Instrument strings frets) =
 --            Instrument (deleteBy (\(n1, _) (n2, _) -> n1 == n2) name ss) f
 
 -- |Finds all possible fingerings for a given chord.
-chordFingerings :: ChordSpec -> Instrument -> [ChordFingering]
+chordFingerings :: ChordPattern -> Instrument -> [ChordFingering]
 --chordFingerings c i = map ChordFingering $ notesFingerings (toNotes c) i
-chordFingerings (ChordSpec root intervals) (Instrument strings frets) =
+chordFingerings (ChordPattern root intervals) (Instrument strings frets) =
     map makeChordFingering fs
     where
         makeChordFingering frets =
@@ -89,7 +90,7 @@ frettable :: ChordFingering -> Bool
 frettable f = fretSpan f < 6
 
 chordRank (ChordFingering []) = error "fingering for 0 strings?"
-chordRank c@(ChordFingering ss) =
+chordRank c @ (ChordFingering ss) =
     (-usedStrings, -openStrings, fretSpan c)
     where
         frets = map (\(StringFingering _ f) -> f) ss
@@ -97,40 +98,27 @@ chordRank c@(ChordFingering ss) =
         openStrings =
             length $ filter (\(Fret x) -> x == 0) (catMaybes frets)
 
-
-
----------------
-
-
---class InstrumentData i where
---    create :: a -> i
-
---data InstrumentData i a = InstrumentData a
-
---data GuitarData a = (a, a, a, a, a, a)
---data UkuleleData a = (a, a, a, a)
-
 -- |Finds all notes which will constitute a specified interval
 -- with a specified root note.
-notesForChordInterval :: ChordInterval -> Note -> [Note]
-notesForChordInterval (ChordInterval {..}) root =
-    case getFlexibleOctave of
-        False -> [root `addInterval` getInterval]
-        True -> 
-            [root `addInterval` i | i <- intervals, (abs i) >= getInterval]
+notesForChordInterval :: Interval -> Bool -> Note -> [Note]
+notesForChordInterval interval fixedOctave root =
+    case fixedOctave of
+        True -> [root `addInterval` interval]
+        False -> 
+            [root `addInterval` i | i <- intervals, (abs i) >= interval]
             where
                 -- @TODO negative octaves. will this work?
                 octaves =
                     map (\(Octave o) -> In.octave `multiplyInterval` o) $
-                    [(minBound :: Octave) ..] >>= (\o -> [o, -o])
-                intervals = map (getInterval +) octaves
+                    [minBound .. maxBound] >>= (\o -> [o, -o])
+                intervals = map (interval +) octaves
 
 -- |Generate all possible selections of an interval from available interval
 -- list.
-pickIntervals :: [ChordInterval] -> [(ChordInterval, [ChordInterval])]
+pickIntervals :: [IntervalPattern] -> [(IntervalPattern, [IntervalPattern])]
 pickIntervals availableIntervals = do
-    (i @ ChordInterval {..}, restIntervals) <- choice availableIntervals
-    if getCanUseMany then return (i, availableIntervals)
+    (i @ IntervalPattern {..}, restIntervals) <- choice availableIntervals
+    if canUseMany then return (i, availableIntervals)
     else return (i, restIntervals)
     where
         choice' _ [] acc = acc
@@ -140,36 +128,45 @@ pickIntervals availableIntervals = do
 
 -- |Find all possible fingerings of any of the given available chord spec
 -- intervals on a given string.
-intervalsOnString :: [ChordInterval]
+intervalsOnString :: [IntervalPattern]
                   -> Note
                   -> InstrumentString
-                  -> [(Fret, ChordInterval, [ChordInterval])]
+                  -> [(Fret, [IntervalPattern])]
 intervalsOnString intervals rootNote string = do
-    (interval, restIntervals) <- pickIntervals intervals
-    note <- notesForChordInterval interval rootNote
+    (IntervalPattern {..}, restIntervals) <-
+        pickIntervals intervals
+    note <- notesForChordInterval interval fixedOctave rootNote
     let fret = findFret note string
-    return $ (fret, interval, restIntervals)
+    return $ (fret, restIntervals)
 
 -- |Find all fingerings for the chord spec on a given instrument spec.
-fingerings :: [ChordInterval] -- ^ chord spec
-           -> Note -- ^ chord root note
+fingerings :: [IntervalPattern] -- ^ chord spec
+           -> NotePattern -- ^ chord root note
            -> [InstrumentString] -- ^ instrument strings
            -> FretNumber -- ^ how many frets the instrument has
            -> [[Maybe Fret]] -- ^ fingerings
 fingerings chordIntervals _ [] _ = do
     -- if we have any non-optional intervals left to assign but no available
     -- strings, this fingering combination should be discarded
-    guard $ any (not . getIsOptional) chordIntervals
+    --guard $ any (not . isOptional) chordIntervals
     return []
-fingerings chordIntervals rootNote strings frets = do
+fingerings chordIntervals notePattern strings frets = do
+    rootNote <- generate notePattern
     -- take next string, keeping what's left
-    (string, restStrings) <- zip strings (tail (iterate tail strings))
+    let (string:restStrings) = strings
     -- take next fingering for any of the intervals on this string
-    (fret, _, restIntervals) <-
-        (Nothing, Nothing, chordIntervals) :
-        (map (\(x, y, z) -> ((Just x), (Just y), z)) $ intervalsOnString chordIntervals rootNote string)
-    -- the fingering should be withing the instruments fretboard
-    guard $ maybe True (\fret -> fret >= 0 && fret <= (fromInteger frets)) fret
+    (fret, restIntervals) <-
+        (map (\(x, z) -> ((Just x), z)) $
+            intervalsOnString chordIntervals rootNote string)
+        ++ [(Nothing, chordIntervals)]
+    -- the fingering should be within the instrument's fretboard
+    guard $ case fret of
+        Nothing -> True
+        Just fret -> fret >= 0 && fret <= (fromInteger frets)
+    --guard $ maybe True (\fret -> fret >= 0 && fret <= (fromInteger frets)) fret
+
     -- take next fingerings for the rest of the strings (and intervals)
-    f <- fingerings restIntervals rootNote restStrings frets
-    return $ fret : f
+    -- @TODO filter out absurd chords here
+    (fret :) <$> fingerings restIntervals notePattern restStrings frets
+    --f <- fingerings restIntervals notePattern restStrings frets
+    --return $ fret : f
