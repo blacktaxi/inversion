@@ -8,20 +8,6 @@ import Note
 data Chord = Chord Note [Interval]
     deriving (Eq, Read, Show)
 
--- |An interval in a chord spec.
--- @TODO rename fields
-data ChordInterval = ChordInterval
-    { getInterval :: Interval
-    , getIsOptional :: Bool
-    , getCanUseMany :: Bool
-    , getFlexibleOctave :: Bool
-    }
-    deriving (Eq, Show, Read)
-
--- |
-data ChordSpec = ChordSpec Note [ChordInterval]
-    deriving (Eq, Show, Read)
-
 -- |Converts a chord to a list of notes that constitute the
 -- chord.
 toNotes :: Chord -> [Note]

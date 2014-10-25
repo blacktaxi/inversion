@@ -13,9 +13,9 @@ import Instrument
 import Fingering
 
 class ShowFingering b a where
-    showFingering :: Instrument -> a -> String
+    showFingering :: Instrument b -> a -> String
 
-showFingeredString :: InstrumentString -> String -> FretNumber -> Maybe Fret -> String
+showFingeredString :: (PrintfArg a) => GuitarString -> a -> FretNumber -> Maybe Fret -> String
 showFingeredString string stringName fretCount fingering =
     printf "%5s %s%s" stringName nut fretBoard
     where 
@@ -34,25 +34,22 @@ showNumberedBoard board fretCount =
     unlines (board ++ [fretNumbers])
     where fretNumbers = "     " ++ (showFretNumbers fretCount)
           
-instance (PrintfArg a) => ShowFingering a StringFingering where
+instance (PrintfArg a) => ShowFingering a (StringFingering a) where
     showFingering (Instrument strings fretCount) (StringFingering name fingering) =
         showNumberedBoard ss fretCount
         where
             mutedString s n = showFingeredString s n fretCount Nothing
-            ss = [if n == name then showFingeredString s n fretCount fingering
-                 else mutedString s n | (n, s) <- strings]
+            ss = [if n == name then showFingeredString s n fretCount (Just fingering)
+                 else mutedString s n | (n, s) <- M.assocs strings]
 
-instance (PrintfArg a) => ShowFingering a ChordFingering where
+instance (PrintfArg a) => ShowFingering a (ChordFingering a) where
     showFingering (Instrument strings fretCount) (ChordFingering fingerings) =
         showNumberedBoard ss fretCount
         where
-            stringsMap = M.fromList strings
-            allMute = M.fromList $ map (\(n, _) -> (n, StringFingering n Nothing)) strings
-            chord = M.fromList $ map (\f@(StringFingering n _) -> (n, f)) fingerings
+            allMute = M.map (\_ -> Nothing :: Maybe (StringFingering a)) strings
+            chord = M.fromList $ map (\f@(StringFingering n _) -> (n, Just f)) fingerings
             stringMap = chord `M.union` allMute
             ss = [showFingeredString string n fretCount maybeFret |
-                 (n, f @ (StringFingering _ maybeFret)) <- M.assocs stringMap, -- @TODO ...
-                 let string = stringsMap M.! n
-
-                 --,let maybeFret = fmap (\(StringFingering _ fret) -> fret) f
-                 ]
+                 (n, f) <- M.assocs stringMap,
+                 let string = strings M.! n,
+                 let maybeFret = fmap (\(StringFingering _ fret) -> fret) f]

@@ -7,7 +7,6 @@ import Data.Maybe (fromMaybe, isJust, catMaybes)
 
 import Note (ABC (..), Octave (..))
 import Interval (Interval (..))
-import qualified Chord as C
 import qualified Interval as In
 import Pattern
 
@@ -29,7 +28,7 @@ infix 0 <??>
 oneOfStr :: [String] -> CharParser () String
 oneOfStr ss = choice (map string ss)
 
-pChord :: CharParser () C.ChordSpec
+pChord :: CharParser () (ChordPattern NotePattern [IntervalPattern])
 pChord = do
     note <- "note pattern" <??> pTemplateValue pNote
     octave <- "octave pattern" <??> fromMaybe Any <$> 
