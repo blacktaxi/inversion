@@ -14,9 +14,7 @@ It accepts JSON in the format like this:
 
 You can get this JSON from inversion by using JSON output mode.
 '''
-from pygame import midi
 import sys
-import time
 
 def note_to_int(note):
     abc = note[0]
@@ -31,45 +29,6 @@ def chord_to_notes(string_notes, chord):
     oc = chord.items()
     oc.sort(key=lambda x: x[0])
     return [string_notes[k] + v for k, v in oc[::-1]]
-
-def play_chord(out, notes):
-    # use different channel for each note/string
-    # useful when some strings resolve to the same note
-    # sounds better
-    notes = zip(xrange(666), notes)
-    def play(dly, speedup=False):
-        for cn, n in notes:
-            out.note_on(n, 100, cn + 1)
-            time.sleep(dly)
-            if speedup: dly = dly * 0.9
-
-    play(0.2)
-    time.sleep(0.7)
-    play(0.04, True)
-    time.sleep(2)
-
-    for cn, n in notes: out.note_off(n, 100, cn + 1)
-    time.sleep(0.1)
-
-def init_output_device():
-    out = midi.Output(midi.get_default_output_id())
-
-    # set all channels to guitar
-    for c in xrange(15):
-        out.set_instrument(24, c + 1)
-
-    return out
-
-def play_chords(chords):
-    midi.init()
-    out = init_output_device()
-    for ns in chords:
-        print ns
-        play_chord(out, ns)
-    out.close()
-    out.abort()
-    try: midi.quit()
-    except: pass
 
 def chords_from_json(jsonstr):
     import json
@@ -89,4 +48,9 @@ if __name__ == '__main__':
     else:
         chords = map(eval, input_data.splitlines())
 
-    play_chords(chords)
+    try:
+        from pygameplayer import play_chords
+        play_chords(chords)
+    except:
+        from soxplayer import play_chords
+        play_chords(chords)
