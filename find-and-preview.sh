@@ -1,2 +1,3 @@
 #!/bin/sh
-./dist/build/inversion/inversion "$@" -o=Midi | ./dist/build/audio-preview/audio-preview | play -ts16 -r44100 -c1 -x -
+cd src
+./Main.hs "$@" -o=Midi | ./Preview.hs | play -ts16 -r44100 -c1 -x -

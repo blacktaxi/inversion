@@ -1,3 +1,5 @@
+#!/usr/bin/env stack
+-- stack --resolver lts-3.7 --install-ghc runghc
 module Main where
 
 import Control.Applicative ((<$>), (<*>))
