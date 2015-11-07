@@ -1,4 +1,4 @@
-Inversion
+Inversion [![Build Status](https://travis-ci.org/blacktaxi/inversion.svg)](https://travis-ci.org/blacktaxi/inversion)
 =========
 `inversion` is a chord search assistant for stringed instruments with
 frets. It is a command line tool that takes an instrument configuration and chord
